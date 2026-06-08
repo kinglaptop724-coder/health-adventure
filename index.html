@@ -1,175 +1,162 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>Health Adventure RPG</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Adventure Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2D6A4F;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --accent: #52b788;
+        }
 
-<style>
-body{
-    font-family:Arial;
-    background:#dff5e1;
-    margin:0;
-    text-align:center;
-}
+        body {
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            background: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
 
-#game{
-    max-width:900px;
-    margin:auto;
-    padding:20px;
-}
+        #game {
+            max-width: 600px;
+            margin: auto;
+        }
 
-.card{
-    background:white;
-    border-radius:15px;
-    padding:20px;
-    margin-top:20px;
-    box-shadow:0 0 10px rgba(0,0,0,.2);
-}
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-input,select{
-    width:80%;
-    padding:10px;
-    margin:8px;
-}
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
 
-button{
-    padding:12px 25px;
-    border:none;
-    border-radius:10px;
-    background:#4CAF50;
-    color:white;
-    cursor:pointer;
-}
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #444;
+        }
 
-button:hover{
-    background:#388E3C;
-}
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+        }
 
-#result{
-    font-size:18px;
-}
-</style>
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 25px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
+        button:hover {
+            background: var(--accent);
+        }
+
+        #result {
+            padding-top: 10px;
+            text-align: center;
+        }
+
+        .status-box {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
 
 <div id="game">
+    <div class="header">
+        <h1>🏥 ระบบวิเคราะห์สุขภาพเบื้องต้น</h1>
+    </div>
 
-<h1>🏥 Health Adventure RPG</h1>
+    <div class="card">
+        <label>ชื่อ-นามสกุล</label>
+        <input id="name" type="text" placeholder="กรอกชื่อผู้ป่วย">
 
-<div class="card">
+        <label>อายุ</label>
+        <input id="age" type="number" placeholder="กรอกอายุ">
 
-<h2>ข้อมูลผู้ป่วย</h2>
+        <label>อาการเบื้องต้น</label>
+        <select id="fever"><option value="0">ไม่มีไข้</option><option value="1">ไข้ต่ำ</option><option value="2">ไข้สูง</option></select>
+        <select id="cough"><option value="0">ไม่ไอ</option><option value="1">ไอแห้ง</option><option value="2">ไอมีเสมหะ</option></select>
+        <select id="breath"><option value="0">หายใจปกติ</option><option value="2">เหนื่อยหอบเล็กน้อย</option><option value="3">หอบเหนื่อยรุนแรง</option></select>
+        <select id="eat"><option value="0">ทานได้ปกติ</option><option value="2">ทานไม่ได้</option></select>
 
-<input id="name" placeholder="ชื่อผู้ป่วย">
+        <button onclick="analyze()">ประมวลผลการวิเคราะห์</button>
+    </div>
 
-<br>
-
-<input id="age" type="number" placeholder="อายุ">
-
-<br>
-
-<select id="fever">
-<option value="0">ไม่มีไข้</option>
-<option value="2">มีไข้</option>
-</select>
-
-<br>
-
-<select id="cough">
-<option value="0">ไม่ไอ</option>
-<option value="2">ไอ</option>
-</select>
-
-<br>
-
-<select id="breath">
-<option value="0">หายใจปกติ</option>
-<option value="3">เหนื่อยหอบ</option>
-</select>
-
-<br>
-
-<select id="eat">
-<option value="0">กินอาหารได้</option>
-<option value="2">กินอาหารไม่ได้</option>
-</select>
-
-<br>
-
-<button onclick="analyze()">
-วิเคราะห์สุขภาพ
-</button>
-
-</div>
-
-<div class="card">
-
-<h2>ผลวิเคราะห์</h2>
-
-<div id="result">
-รอการประเมิน...
-</div>
-
-</div>
-
+    <div class="card" id="result-card" style="display:none;">
+        <h2>📋 ผลการประเมิน</h2>
+        <div id="result"></div>
+    </div>
 </div>
 
 <script>
-
 function analyze(){
+    let name = document.getElementById("name").value;
+    let age = parseInt(document.getElementById("age").value) || 0;
+    
+    let fever = parseInt(document.getElementById("fever").value);
+    let cough = parseInt(document.getElementById("cough").value);
+    let breath = parseInt(document.getElementById("breath").value);
+    let eat = parseInt(document.getElementById("eat").value);
 
-    let name=document.getElementById("name").value;
-    let age=parseInt(document.getElementById("age").value)||0;
+    let score = fever + cough + breath + eat;
+    if(age >= 60) score += 2;
 
-    let score=0;
+    let diagnosis = "";
+    let color = "";
+    let advice = "";
 
-    score+=Number(document.getElementById("fever").value);
-    score+=Number(document.getElementById("cough").value);
-    score+=Number(document.getElementById("breath").value);
-    score+=Number(document.getElementById("eat").value);
-
-    if(age>=60){
-        score+=2;
+    // logic สำหรับการวิเคราะห์เบื้องต้น
+    if(score === 0) {
+        diagnosis = "สุขภาพปกติดี";
+        color = "#2D6A4F";
+        advice = "พักผ่อนให้เพียงพอและรักษาสุขอนามัย";
+    } else if(score <= 4) {
+        diagnosis = "เฝ้าระวังอาการ (กลุ่มอาการหวัดเบื้องต้น)";
+        color = "#e9c46a";
+        advice = "ควรดื่มน้ำมากๆ และสังเกตอาการภายใน 24 ชม.";
+    } else {
+        diagnosis = "เสี่ยงต่อภาวะติดเชื้อหรืออาการรุนแรง";
+        color = "#e76f51";
+        advice = "ควรพบแพทย์เพื่อวินิจฉัยโดยละเอียดโดยเร็ว";
     }
 
-    let level="";
-    let advice="";
-
-    if(score<=2){
-
-        level="🟢 สุขภาพปกติ";
-
-        advice="ควรพักผ่อนและดูแลสุขภาพต่อเนื่อง";
-
-    }
-    else if(score<=5){
-
-        level="🟡 เฝ้าระวัง";
-
-        advice="ควรติดตามอาการภายใน 24-48 ชั่วโมง";
-
-    }
-    else{
-
-        level="🔴 ควรพบแพทย์";
-
-        advice="พบความเสี่ยงด้านสุขภาพ ควรเข้ารับการตรวจ";
-
-    }
-
-    document.getElementById("result").innerHTML=
-    `
-    <h3>${level}</h3>
-
-    <p><b>ผู้ป่วย:</b> ${name}</p>
-
-    <p><b>คะแนนความเสี่ยง:</b> ${score}</p>
-
-    <p>${advice}</p>
+    document.getElementById("result-card").style.display = "block";
+    document.getElementById("result").innerHTML = `
+        <div class="status-box" style="background:${color}20; color:${color}; border: 2px solid ${color}">
+            <h3>${diagnosis}</h3>
+            <p style="color: #333;"><b>ผู้ป่วย:</b> ${name || 'ไม่ระบุชื่อ'}</p>
+            <p style="color: #333;"><b>คะแนนประเมิน:</b> ${score} คะแนน</p>
+            <p><b>คำแนะนำ:</b> ${advice}</p>
+        </div>
     `;
 }
-
 </script>
 
 </body>
