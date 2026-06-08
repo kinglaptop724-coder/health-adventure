@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Health Adventure RPG</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#dff5e1;
+    margin:0;
+    text-align:center;
+}
+
+#game{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    margin-top:20px;
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+}
+
+input,select{
+    width:80%;
+    padding:10px;
+    margin:8px;
+}
+
+button{
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    background:#4CAF50;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#388E3C;
+}
+
+#result{
+    font-size:18px;
+}
+</style>
+
+</head>
+<body>
+
+<div id="game">
+
+<h1>🏥 Health Adventure RPG</h1>
+
+<div class="card">
+
+<h2>ข้อมูลผู้ป่วย</h2>
+
+<input id="name" placeholder="ชื่อผู้ป่วย">
+
+<br>
+
+<input id="age" type="number" placeholder="อายุ">
+
+<br>
+
+<select id="fever">
+<option value="0">ไม่มีไข้</option>
+<option value="2">มีไข้</option>
+</select>
+
+<br>
+
+<select id="cough">
+<option value="0">ไม่ไอ</option>
+<option value="2">ไอ</option>
+</select>
+
+<br>
+
+<select id="breath">
+<option value="0">หายใจปกติ</option>
+<option value="3">เหนื่อยหอบ</option>
+</select>
+
+<br>
+
+<select id="eat">
+<option value="0">กินอาหารได้</option>
+<option value="2">กินอาหารไม่ได้</option>
+</select>
+
+<br>
+
+<button onclick="analyze()">
+วิเคราะห์สุขภาพ
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>ผลวิเคราะห์</h2>
+
+<div id="result">
+รอการประเมิน...
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function analyze(){
+
+    let name=document.getElementById("name").value;
+    let age=parseInt(document.getElementById("age").value)||0;
+
+    let score=0;
+
+    score+=Number(document.getElementById("fever").value);
+    score+=Number(document.getElementById("cough").value);
+    score+=Number(document.getElementById("breath").value);
+    score+=Number(document.getElementById("eat").value);
+
+    if(age>=60){
+        score+=2;
+    }
+
+    let level="";
+    let advice="";
+
+    if(score<=2){
+
+        level="🟢 สุขภาพปกติ";
+
+        advice="ควรพักผ่อนและดูแลสุขภาพต่อเนื่อง";
+
+    }
+    else if(score<=5){
+
+        level="🟡 เฝ้าระวัง";
+
+        advice="ควรติดตามอาการภายใน 24-48 ชั่วโมง";
+
+    }
+    else{
+
+        level="🔴 ควรพบแพทย์";
+
+        advice="พบความเสี่ยงด้านสุขภาพ ควรเข้ารับการตรวจ";
+
+    }
+
+    document.getElementById("result").innerHTML=
+    `
+    <h3>${level}</h3>
+
+    <p><b>ผู้ป่วย:</b> ${name}</p>
+
+    <p><b>คะแนนความเสี่ยง:</b> ${score}</p>
+
+    <p>${advice}</p>
+    `;
+}
+
+</script>
+
+</body>
+</html>
