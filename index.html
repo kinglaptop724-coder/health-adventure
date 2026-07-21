@@ -130,7 +130,7 @@
 
     /* Live Match Animation */
     .live-clock { font-weight: 700; color: var(--gold); text-align: center; font-size: 14px; margin-bottom: 6px; letter-spacing: 0.5px; }
-    .live-clock .pulse-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-right: 6px; animation: pulseDot 1s infinite; }
+    .pulse-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-right: 6px; animation: pulseDot 1s infinite; }
     @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
     .mini-pitch { position: relative; width: 100%; height: 150px; background: repeating-linear-gradient(90deg, #16a34a, #16a34a 20px, #15803d 20px, #15803d 40px); border: 2px solid rgba(255,255,255,0.5); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
     .mini-pitch-center-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,0.45); }
@@ -160,6 +160,9 @@
 
     #loading { text-align: center; padding: 50px; font-size: 20px; color: var(--primary); display: none; }
     ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: var(--bg-dark); } ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    .icon { display: inline-block; vertical-align: -3px; }
+    h1 .icon, h2 .icon, h3 .icon { vertical-align: -4px; margin-right: 6px; opacity: 0.9; }
+    button .icon { vertical-align: -3px; margin-right: 4px; }
   </style>
 </head>
 <body>
@@ -167,7 +170,7 @@
   <!-- หน้าจอเข้าสู่ระบบ (อัปเดตระบบพิมพ์ค้นหาชื่อ) -->
   <div id="loginOverlay" class="modal-overlay" style="display: flex;">
     <div class="modal-content" style="border-color: var(--gold); max-width: 350px;">
-      <h2 style="color: var(--gold); margin-top: 0;">⚽<br>DMC FOOTBALL<br>MANAGER</h2>
+      <h2 style="color: var(--gold); margin-top: 0;"><span data-icon="ball" data-icon-size="34"></span><br>DMC FOOTBALL<br>MANAGER</h2>
       <p style="color: var(--text-muted); font-size: 14px;">กรุณาเข้าสู่ระบบเพื่อจัดการทีมของคุณ</p>
       
       <div class="login-form">
@@ -186,13 +189,13 @@
   </div>
 
   <header id="mainHeader" style="display: none;">
-    <h1>⚽ DMC FOOTBALL MANAGER</h1>
+    <h1><span data-icon="ball" data-icon-size="22"></span>DMC FOOTBALL MANAGER</h1>
     <div style="display:flex; align-items:center;">
       <div class="budget-display">
         <span class="budget-label">งบประมาณสโมสร:</span>
         <span class="budget-value" id="budgetText">฿200.0M</span>
       </div>
-      <button class="btn-save-game" id="btnSaveGame" onclick="saveGameData()">💾 บันทึกเกม</button>
+      <button class="btn-save-game" id="btnSaveGame" onclick="saveGameData()"><span data-icon="save" data-icon-size="15"></span>บันทึกเกม</button>
     </div>
   </header>
   
@@ -202,7 +205,7 @@
     
     <div class="panel">
       <div class="panel-header">
-        <h2>📊 ตลาดนักเตะดาวรุ่ง</h2>
+        <h2><span data-icon="chart" data-icon-size="18"></span>ตลาดนักเตะดาวรุ่ง</h2>
         <span style="font-size: 12px; background: var(--primary); padding: 4px 8px; border-radius: 12px;">ในทีม: <span id="squadCount">0</span>/20</span>
       </div>
       
@@ -231,7 +234,7 @@
     <div class="panel tactics-panel">
       <div class="panel-header" style="flex-wrap: wrap;">
         <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
-          <h2>👕 จัดแผนการเล่น</h2>
+          <h2><span data-icon="shirt" data-icon-size="18"></span>จัดแผนการเล่น</h2>
           <select id="formationSelect" onchange="changeFormation()" style="max-width: 120px; padding: 5px;">
             <option value="4-4-2">4-4-2</option><option value="4-3-3">4-3-3</option>
             <option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option>
@@ -241,17 +244,17 @@
           </span>
         </div>
         <div style="display: flex; gap: 10px;">
-          <button class="btn-play" onclick="playMatch()">▶ แข่งลีกภูมิภาค</button>
-          <button class="btn-cup" id="btnCup" onclick="playCupMatch()">🏆 แข่งบอลถ้วยข้ามลีก</button>
+          <button class="btn-play" onclick="playMatch()"><span data-icon="ball" data-icon-size="15"></span>แข่งลีกภูมิภาค</button>
+          <button class="btn-cup" id="btnCup" onclick="playCupMatch()"><span data-icon="trophy" data-icon-size="15"></span>แข่งบอลถ้วยข้ามลีก</button>
         </div>
       </div>
       
       <div class="cup-status-bar">
-        <div class="cup-title">🏆 ฟุตบอลถ้วยข้ามลีก (ต่างจังหวัด)</div>
+        <div class="cup-title"><span data-icon="trophy" data-icon-size="16"></span>ฟุตบอลถ้วยข้ามลีก (ต่างจังหวัด)</div>
         <div style="display:flex; align-items:center; gap:10px; flex-wrap: wrap;">
           <div style="font-weight: 600; font-size: 14px;" id="cupStatusText">สถานะ: กำลังโหลด...</div>
-          <button onclick="showCupBracket()" style="font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--cup-bg); background:transparent; color:#c4b5fd; cursor:pointer;">📋 ผังสาย</button>
-          <button onclick="openAdminCupPanel()" style="font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid #475569; background:transparent; color:#94a3b8; cursor:pointer;">🔧 แอดมิน</button>
+          <button onclick="showCupBracket()" style="font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--cup-bg); background:transparent; color:#c4b5fd; cursor:pointer;"><span data-icon="clipboard" data-icon-size="13"></span>ผังสาย</button>
+          <button onclick="openAdminCupPanel()" style="font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid #475569; background:transparent; color:#94a3b8; cursor:pointer;"><span data-icon="settings" data-icon-size="13"></span>แอดมิน</button>
         </div>
       </div>
       
@@ -261,7 +264,7 @@
       </div>
 
       <div class="panel-header" style="margin-top: 10px; margin-bottom: 5px; padding-bottom: 5px;">
-        <h2>🪑 ม้านั่งสำรอง</h2>
+        <h2><span data-icon="bench" data-icon-size="18"></span>ม้านั่งสำรอง</h2>
       </div>
       <div class="bench-container" id="benchArea"></div>
     </div>
@@ -269,7 +272,7 @@
     <!-- แผงตารางคะแนน -->
     <div class="panel" style="flex: 100%;">
       <div class="panel-header">
-        <h2>🏅 ตารางคะแนนลีกภูมิภาค</h2>
+        <h2><span data-icon="medal" data-icon-size="18"></span>ตารางคะแนนลีกภูมิภาค</h2>
       </div>
       <div class="table-container">
         <table class="league-table">
@@ -290,11 +293,11 @@
   <!-- Modal สำหรับติวเข้ม -->
   <div id="quizModal" class="modal-overlay" style="z-index: 2000;">
     <div class="modal-content">
-      <h3 style="margin-bottom: 4px;">📚 ห้องติวเข้ม</h3>
+      <h3 style="margin-bottom: 4px;"><span data-icon="book" data-icon-size="17"></span>ห้องติวเข้ม</h3>
       <span class="quiz-subject-badge" id="quizSubject">หมวดวิชา</span>
       <div class="quiz-question-box" id="quizQuestion">คำถามจะแสดงที่นี่...</div>
       <div class="quiz-options" id="quizOptions"></div>
-      <div class="quiz-power-note">⚡ ตอบถูกแต่ละครั้ง พลังจะค่อยๆ เพิ่มขึ้นทีละนิด</div>
+      <div class="quiz-power-note"><span data-icon="zap" data-icon-size="13"></span>ตอบถูกแต่ละครั้ง พลังจะค่อยๆ เพิ่มขึ้นทีละนิด</div>
       <button class="btn-close" onclick="closeQuiz()">ยกเลิกการติว</button>
     </div>
   </div>
@@ -315,7 +318,7 @@
         <div class="mini-pitch" id="miniPitch">
           <div class="mini-pitch-center-line"></div>
           <div class="mini-pitch-circle"></div>
-          <div class="mini-ball" id="miniBall">⚽</div>
+          <div class="mini-ball" id="miniBall"><span data-icon="ball" data-icon-size="16"></span></div>
           <div class="goal-flash" id="goalFlash"></div>
         </div>
         <div class="live-events" id="liveEventsLog"></div>
@@ -387,6 +390,54 @@
     let allAccountNames = []; // 📌 ตัวแปรเก็บรายชื่อผู้เล่นทั้งหมดจากชีตบัญชี
     let accountNamesLoaded = false;
     let accountNamesPromise = null;
+
+    // ================== ระบบไอคอน (แทนอิโมจิสีสันฉูดฉาดด้วยไอคอนเส้น โทนเดียว ดูเป็นทางการมากขึ้น) ==================
+    // ไอคอนทั้งหมดใช้ currentColor เพื่อรับสีจาก CSS ของ element แม่ ทำให้คุมโทนสีได้ง่ายและสม่ำเสมอทั้งระบบ
+    const ICON_PATHS = {
+      ball:        '<circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/><path d="M12 3v4M12 21v-4M3 12h4M21 12h-4M5.5 5.5l3 3M18.5 5.5l-3 3M5.5 18.5l3-3M18.5 18.5l-3-3"/>',
+      save:        '<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M7 14h10v6H7z"/>',
+      chart:       '<path d="M4 20V10M10 20V4M16 20v-7M22 20v3" transform="translate(-1,0)"/><path d="M3 20h18"/>',
+      shirt:       '<path d="M8 4l4 2 4-2 4 3-3 3v10H7V10L4 7z"/>',
+      trophy:      '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5H4a3 3 0 0 0 3 5M17 5h3a3 3 0 0 1-3 5"/><path d="M12 14v3M9 21h6M9 19h6v2H9z"/>',
+      bench:       '<path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M4 11h16v3H4z"/><path d="M6 14v4M18 14v4"/>',
+      medal:       '<circle cx="12" cy="15" r="5"/><path d="M9 4l3 6 3-6"/><path d="M12 12v3"/>',
+      book:        '<path d="M3 5h6a3.5 3.5 0 0 1 3.5 3.5V19a3 3 0 0 0-3-3H3z"/><path d="M21 5h-6a3.5 3.5 0 0 0-3.5 3.5V19a3 3 0 0 1 3-3h6.5z"/>',
+      zap:         '<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
+      calculator:  '<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h1M8 16h1M12 12h1M12 16h1M16 12h1M16 16h1"/>',
+      globe:       '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
+      flask:       '<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M8 15h8"/>',
+      monitor:     '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+      heart:       '<path d="M12 20s-7-4.4-9.5-9C1 7.5 3 4 6.5 4c2 0 3.5 1.2 5.5 3.5C14 5.2 15.5 4 17.5 4 21 4 23 7.5 21.5 11c-2.5 4.6-9.5 9-9.5 9z"/>',
+      check:       '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/>',
+      cross:       '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+      alert:       '<path d="M12 3 2 20h20z"/><path d="M12 9v5M12 17h.01"/>',
+      star:        '<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.2 1 5.9L12 17l-5.2 2.8 1-5.9-4.3-4.2 5.9-.8z"/>',
+      coin:        '<circle cx="12" cy="12" r="9"/><path d="M12 6v12M15.5 9H10a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8.5"/>',
+      repeat:      '<path d="M4 9a8 8 0 0 1 14-4l2 2"/><path d="M20 6V4m0 2h-2"/><path d="M20 15a8 8 0 0 1-14 4l-2-2"/><path d="M4 18v2m0-2h2"/>',
+      close:       '<path d="M6 6l12 12M18 6 6 18"/>',
+      radio:       '<circle cx="12" cy="12" r="2.5"/><path d="M8 8a5.5 5.5 0 0 0 0 8M16 8a5.5 5.5 0 0 1 0 8M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>',
+      swords:      '<path d="M5 4l6 6-3 3-6-6z"/><path d="M19 4l-6 6 3 3 6-6z"/><path d="M8 13l-4 4 3 3 4-4M16 13l4 4-3 3-4-4"/>',
+      flame:       '<path d="M12 3s-5 4.5-5 9a5 5 0 0 0 10 0c0-1.5-.7-2.4-1.3-3.2.2 1.5-.6 2.4-1.4 2.4C13 11 13 9 12 8c-.3 1.5-1.5 2-1.5 3.3A2 2 0 0 0 12 15a4 4 0 0 0 4-4c0-4-4-8-4-8z"/>',
+      trendUp:     '<path d="M4 16l6-6 4 4 6-8"/><path d="M14 6h6v6"/>',
+      equal:       '<path d="M5 9h14M5 15h14"/>',
+      trendDown:   '<path d="M4 8l6 6 4-4 6 8"/><path d="M14 18h6v-6"/>',
+      settings:    '<circle cx="12" cy="12" r="3.5"/><path d="M12 2v4M12 18v4M22 12h-4M6 12H2M18.6 5.4l-2.8 2.8M8.2 15.8l-2.8 2.8M18.6 18.6l-2.8-2.8M8.2 8.2 5.4 5.4"/>',
+      clipboard:   '<rect x="6" y="4" width="12" height="17" rx="1.5"/><rect x="9" y="2.5" width="6" height="3" rx="1"/><path d="M9 11h6M9 15h6"/>',
+      dot:         '<circle cx="12" cy="12" r="5"/>'
+    };
+    // สร้าง markup svg ไอคอนแบบ inline: size = ขนาดพิกเซล, className = class เสริม (ใช้กำหนดสี/ระยะห่างผ่าน CSS ได้)
+    function icon(name, size, className) {
+      const d = ICON_PATHS[name];
+      if (!d) return '';
+      const s = size || 16;
+      return `<svg class="icon${className ? ' ' + className : ''}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; flex-shrink:0;">${d}</svg>`;
+    }
+    // ================== จบระบบไอคอน ==================
+
+    // แปลง placeholder <span data-icon="..."> ทุกจุดในหน้าเว็บให้กลายเป็น svg จริง (เรียกครั้งเดียวตอนโหลด เพราะ DOM ส่วน markup ทั้งหมดถูกสร้างไว้ก่อน <script> นี้แล้ว)
+    document.querySelectorAll('[data-icon]').forEach(function(el) {
+      el.outerHTML = icon(el.getAttribute('data-icon'), parseInt(el.getAttribute('data-icon-size')) || 16, el.getAttribute('data-icon-class'));
+    });
 
     // --- เริ่มต้นโหลดชื่อบัญชี ---
     window.onload = function() { 
@@ -469,7 +520,7 @@
 
     function saveGameData() {
       const btn = document.getElementById('btnSaveGame');
-      btn.innerText = "⏳ กำลังบันทึก...";
+      btn.innerHTML = icon('save', 15) + "กำลังบันทึก...";
       btn.style.background = "#fbbf24";
       btn.disabled = true;
 
@@ -478,16 +529,16 @@
       google.script.run.withSuccessHandler(function(res) {
         if(res.success) {
           isDirty = false;
-          btn.innerText = "✅ บันทึกแล้ว";
+          btn.innerHTML = icon('check', 15) + "บันทึกแล้ว";
           btn.style.background = "#3b82f6"; 
           setTimeout(() => { 
-            btn.innerText = "💾 บันทึกเกม"; 
+            btn.innerHTML = icon('save', 15) + "บันทึกเกม"; 
             btn.style.background = "#10b981"; 
             btn.disabled = false;
           }, 2000);
         } else {
           Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: res.message, confirmButtonColor: '#ef4444', background: '#1e293b', color: '#f8fafc' });
-          btn.innerText = "💾 บันทึกเกม";
+          btn.innerHTML = icon('save', 15) + "บันทึกเกม";
           btn.style.background = "#10b981";
           btn.disabled = false;
         }
@@ -601,70 +652,70 @@
 
     const quizBank = [
       // 🔢 คณิตศาสตร์
-      { subject: "คณิตศาสตร์ 🔢", q: "25 x 4 เท่ากับเท่าใด?", choices: ["100", "120", "80"], ans: 0 },
-      { subject: "คณิตศาสตร์ 🔢", q: "รากที่สองของ 144 คือข้อใด?", choices: ["14", "12", "16"], ans: 1 },
-      { subject: "คณิตศาสตร์ 🔢", q: "7 x 8 เท่ากับเท่าใด?", choices: ["54", "56", "64"], ans: 1 },
-      { subject: "คณิตศาสตร์ 🔢", q: "100 หาร 4 เท่ากับเท่าใด?", choices: ["20", "25", "40"], ans: 1 },
-      { subject: "คณิตศาสตร์ 🔢", q: "3 ยกกำลัง 3 เท่ากับเท่าใด?", choices: ["9", "27", "81"], ans: 1 },
-      { subject: "คณิตศาสตร์ 🔢", q: "ครึ่งหนึ่งของ 90 คือเท่าใด?", choices: ["40", "45", "50"], ans: 1 },
-      { subject: "คณิตศาสตร์ 🔢", q: "เศษส่วน 1/2 เท่ากับกี่เปอร์เซ็นต์?", choices: ["25%", "50%", "75%"], ans: 1 },
-      { subject: "คณิตศาสตร์ 🔢", q: "มุมฉากมีกี่องศา?", choices: ["45 องศา", "90 องศา", "180 องศา"], ans: 1 },
-      { subject: "คณิตศาสตร์ 🔢", q: "รูปสามเหลี่ยมมีกี่ด้าน?", choices: ["3 ด้าน", "4 ด้าน", "5 ด้าน"], ans: 0 },
-      { subject: "คณิตศาสตร์ 🔢", q: "15 + 27 เท่ากับเท่าใด?", choices: ["42", "32", "52"], ans: 0 },
+      { subject: "คณิตศาสตร์", q: "25 x 4 เท่ากับเท่าใด?", choices: ["100", "120", "80"], ans: 0 },
+      { subject: "คณิตศาสตร์", q: "รากที่สองของ 144 คือข้อใด?", choices: ["14", "12", "16"], ans: 1 },
+      { subject: "คณิตศาสตร์", q: "7 x 8 เท่ากับเท่าใด?", choices: ["54", "56", "64"], ans: 1 },
+      { subject: "คณิตศาสตร์", q: "100 หาร 4 เท่ากับเท่าใด?", choices: ["20", "25", "40"], ans: 1 },
+      { subject: "คณิตศาสตร์", q: "3 ยกกำลัง 3 เท่ากับเท่าใด?", choices: ["9", "27", "81"], ans: 1 },
+      { subject: "คณิตศาสตร์", q: "ครึ่งหนึ่งของ 90 คือเท่าใด?", choices: ["40", "45", "50"], ans: 1 },
+      { subject: "คณิตศาสตร์", q: "เศษส่วน 1/2 เท่ากับกี่เปอร์เซ็นต์?", choices: ["25%", "50%", "75%"], ans: 1 },
+      { subject: "คณิตศาสตร์", q: "มุมฉากมีกี่องศา?", choices: ["45 องศา", "90 องศา", "180 องศา"], ans: 1 },
+      { subject: "คณิตศาสตร์", q: "รูปสามเหลี่ยมมีกี่ด้าน?", choices: ["3 ด้าน", "4 ด้าน", "5 ด้าน"], ans: 0 },
+      { subject: "คณิตศาสตร์", q: "15 + 27 เท่ากับเท่าใด?", choices: ["42", "32", "52"], ans: 0 },
 
       // 📖 ภาษาไทย
-      { subject: "ภาษาไทย 📖", q: "คำใดเขียนถูกต้อง?", choices: ["กะเพรา", "กระเพรา", "กะเพา"], ans: 0 },
-      { subject: "ภาษาไทย 📖", q: "คำราชาศัพท์ 'เสวย' หมายถึงข้อใด?", choices: ["กิน", "นอน", "เดิน"], ans: 0 },
-      { subject: "ภาษาไทย 📖", q: "คำใดสะกดถูกต้อง?", choices: ["อนุญาต", "อนุญาติ", "อนุญาศ"], ans: 0 },
-      { subject: "ภาษาไทย 📖", q: "สุนทรภู่แต่งวรรณคดีเรื่องใด?", choices: ["พระอภัยมณี", "ขุนช้างขุนแผน", "รามเกียรติ์"], ans: 0 },
-      { subject: "ภาษาไทย 📖", q: "คำว่า 'มานะ' หมายถึงข้อใด?", choices: ["ความเพียรพยายาม", "ความขี้เกียจ", "ความเศร้า"], ans: 0 },
-      { subject: "ภาษาไทย 📖", q: "พยัญชนะไทยมีทั้งหมดกี่ตัว?", choices: ["44 ตัว", "40 ตัว", "50 ตัว"], ans: 0 },
-      { subject: "ภาษาไทย 📖", q: "คำว่า 'ประเทศ' มีกี่พยางค์?", choices: ["2 พยางค์", "3 พยางค์", "4 พยางค์"], ans: 0 },
-      { subject: "ภาษาไทย 📖", q: "คำใดต่อไปนี้เป็นคำนาม?", choices: ["วิ่ง", "สวย", "แมว"], ans: 2 },
+      { subject: "ภาษาไทย", q: "คำใดเขียนถูกต้อง?", choices: ["กะเพรา", "กระเพรา", "กะเพา"], ans: 0 },
+      { subject: "ภาษาไทย", q: "คำราชาศัพท์ 'เสวย' หมายถึงข้อใด?", choices: ["กิน", "นอน", "เดิน"], ans: 0 },
+      { subject: "ภาษาไทย", q: "คำใดสะกดถูกต้อง?", choices: ["อนุญาต", "อนุญาติ", "อนุญาศ"], ans: 0 },
+      { subject: "ภาษาไทย", q: "สุนทรภู่แต่งวรรณคดีเรื่องใด?", choices: ["พระอภัยมณี", "ขุนช้างขุนแผน", "รามเกียรติ์"], ans: 0 },
+      { subject: "ภาษาไทย", q: "คำว่า 'มานะ' หมายถึงข้อใด?", choices: ["ความเพียรพยายาม", "ความขี้เกียจ", "ความเศร้า"], ans: 0 },
+      { subject: "ภาษาไทย", q: "พยัญชนะไทยมีทั้งหมดกี่ตัว?", choices: ["44 ตัว", "40 ตัว", "50 ตัว"], ans: 0 },
+      { subject: "ภาษาไทย", q: "คำว่า 'ประเทศ' มีกี่พยางค์?", choices: ["2 พยางค์", "3 พยางค์", "4 พยางค์"], ans: 0 },
+      { subject: "ภาษาไทย", q: "คำใดต่อไปนี้เป็นคำนาม?", choices: ["วิ่ง", "สวย", "แมว"], ans: 2 },
 
       // 🌍 English
-      { subject: "ภาษาอังกฤษ 🌍", q: "'Cat' แปลว่าอะไร?", choices: ["สุนัข", "แมว", "นก"], ans: 1 },
-      { subject: "ภาษาอังกฤษ 🌍", q: "คำใดสะกดถูกต้อง?", choices: ["Beautifull", "Beautiful", "Beutiful"], ans: 1 },
-      { subject: "ภาษาอังกฤษ 🌍", q: "'I ___ a student.' เติมคำใด?", choices: ["is", "am", "are"], ans: 1 },
-      { subject: "ภาษาอังกฤษ 🌍", q: "คำตรงข้ามของ 'Big' คือข้อใด?", choices: ["Small", "Tall", "Fast"], ans: 0 },
-      { subject: "ภาษาอังกฤษ 🌍", q: "'Water' แปลว่าอะไร?", choices: ["น้ำ", "ไฟ", "ดิน"], ans: 0 },
-      { subject: "ภาษาอังกฤษ 🌍", q: "รูปพหูพจน์ของ 'Child' คือข้อใด?", choices: ["Childs", "Children", "Childes"], ans: 1 },
-      { subject: "ภาษาอังกฤษ 🌍", q: "'How ___ are you?' เติมคำใด?", choices: ["old", "age", "years"], ans: 0 },
-      { subject: "ภาษาอังกฤษ 🌍", q: "'Sunday' คือวันใด?", choices: ["วันจันทร์", "วันอาทิตย์", "วันเสาร์"], ans: 1 },
+      { subject: "ภาษาอังกฤษ", q: "'Cat' แปลว่าอะไร?", choices: ["สุนัข", "แมว", "นก"], ans: 1 },
+      { subject: "ภาษาอังกฤษ", q: "คำใดสะกดถูกต้อง?", choices: ["Beautifull", "Beautiful", "Beutiful"], ans: 1 },
+      { subject: "ภาษาอังกฤษ", q: "'I ___ a student.' เติมคำใด?", choices: ["is", "am", "are"], ans: 1 },
+      { subject: "ภาษาอังกฤษ", q: "คำตรงข้ามของ 'Big' คือข้อใด?", choices: ["Small", "Tall", "Fast"], ans: 0 },
+      { subject: "ภาษาอังกฤษ", q: "'Water' แปลว่าอะไร?", choices: ["น้ำ", "ไฟ", "ดิน"], ans: 0 },
+      { subject: "ภาษาอังกฤษ", q: "รูปพหูพจน์ของ 'Child' คือข้อใด?", choices: ["Childs", "Children", "Childes"], ans: 1 },
+      { subject: "ภาษาอังกฤษ", q: "'How ___ are you?' เติมคำใด?", choices: ["old", "age", "years"], ans: 0 },
+      { subject: "ภาษาอังกฤษ", q: "'Sunday' คือวันใด?", choices: ["วันจันทร์", "วันอาทิตย์", "วันเสาร์"], ans: 1 },
 
       // 🔬 วิทยาศาสตร์
-      { subject: "วิทยาศาสตร์ 🔬", q: "น้ำเดือดที่อุณหภูมิกี่องศาเซลเซียส (ระดับน้ำทะเล)?", choices: ["90 องศา", "100 องศา", "120 องศา"], ans: 1 },
-      { subject: "วิทยาศาสตร์ 🔬", q: "โลกโคจรรอบดวงอาทิตย์ครบ 1 รอบใช้เวลาประมาณกี่วัน?", choices: ["365 วัน", "30 วัน", "24 ชั่วโมง"], ans: 0 },
-      { subject: "วิทยาศาสตร์ 🔬", q: "อวัยวะใดทำหน้าที่สูบฉีดเลือด?", choices: ["ปอด", "หัวใจ", "ตับ"], ans: 1 },
-      { subject: "วิทยาศาสตร์ 🔬", q: "พืชใช้ก๊าซใดในการสังเคราะห์แสง?", choices: ["ออกซิเจน", "คาร์บอนไดออกไซด์", "ไนโตรเจน"], ans: 1 },
-      { subject: "วิทยาศาสตร์ 🔬", q: "ดาวเคราะห์ดวงใดอยู่ใกล้ดวงอาทิตย์ที่สุด?", choices: ["ดาวศุกร์", "ดาวพุธ", "โลก"], ans: 1 },
-      { subject: "วิทยาศาสตร์ 🔬", q: "สัตว์ในข้อใดเป็นสัตว์เลี้ยงลูกด้วยนม?", choices: ["ปลา", "วาฬ", "งู"], ans: 1 },
-      { subject: "วิทยาศาสตร์ 🔬", q: "แรงโน้มถ่วงของโลกทำให้เกิดสิ่งใด?", choices: ["วัตถุลอยขึ้น", "วัตถุตกลงสู่พื้น", "วัตถุหมุนรอบตัวเอง"], ans: 1 },
-      { subject: "วิทยาศาสตร์ 🔬", q: "น้ำแข็งอยู่ในสถานะใด?", choices: ["ของเหลว", "ของแข็ง", "แก๊ส"], ans: 1 },
+      { subject: "วิทยาศาสตร์", q: "น้ำเดือดที่อุณหภูมิกี่องศาเซลเซียส (ระดับน้ำทะเล)?", choices: ["90 องศา", "100 องศา", "120 องศา"], ans: 1 },
+      { subject: "วิทยาศาสตร์", q: "โลกโคจรรอบดวงอาทิตย์ครบ 1 รอบใช้เวลาประมาณกี่วัน?", choices: ["365 วัน", "30 วัน", "24 ชั่วโมง"], ans: 0 },
+      { subject: "วิทยาศาสตร์", q: "อวัยวะใดทำหน้าที่สูบฉีดเลือด?", choices: ["ปอด", "หัวใจ", "ตับ"], ans: 1 },
+      { subject: "วิทยาศาสตร์", q: "พืชใช้ก๊าซใดในการสังเคราะห์แสง?", choices: ["ออกซิเจน", "คาร์บอนไดออกไซด์", "ไนโตรเจน"], ans: 1 },
+      { subject: "วิทยาศาสตร์", q: "ดาวเคราะห์ดวงใดอยู่ใกล้ดวงอาทิตย์ที่สุด?", choices: ["ดาวศุกร์", "ดาวพุธ", "โลก"], ans: 1 },
+      { subject: "วิทยาศาสตร์", q: "สัตว์ในข้อใดเป็นสัตว์เลี้ยงลูกด้วยนม?", choices: ["ปลา", "วาฬ", "งู"], ans: 1 },
+      { subject: "วิทยาศาสตร์", q: "แรงโน้มถ่วงของโลกทำให้เกิดสิ่งใด?", choices: ["วัตถุลอยขึ้น", "วัตถุตกลงสู่พื้น", "วัตถุหมุนรอบตัวเอง"], ans: 1 },
+      { subject: "วิทยาศาสตร์", q: "น้ำแข็งอยู่ในสถานะใด?", choices: ["ของเหลว", "ของแข็ง", "แก๊ส"], ans: 1 },
 
       // 🌏 สังคมศึกษา
-      { subject: "สังคมศึกษา 🌏", q: "เมืองหลวงของประเทศไทยคือข้อใด?", choices: ["เชียงใหม่", "กรุงเทพมหานคร", "ภูเก็ต"], ans: 1 },
-      { subject: "สังคมศึกษา 🌏", q: "ทวีปที่มีขนาดใหญ่ที่สุดในโลกคือข้อใด?", choices: ["เอเชีย", "แอฟริกา", "ยุโรป"], ans: 0 },
-      { subject: "สังคมศึกษา 🌏", q: "สกุลเงินของประเทศไทยคือข้อใด?", choices: ["ดอลลาร์", "บาท", "เยน"], ans: 1 },
-      { subject: "สังคมศึกษา 🌏", q: "แม่น้ำสายหลักที่ไหลผ่านกรุงเทพมหานครคือข้อใด?", choices: ["แม่น้ำเจ้าพระยา", "แม่น้ำโขง", "แม่น้ำปิง"], ans: 0 },
-      { subject: "สังคมศึกษา 🌏", q: "วันสงกรานต์ (ปีใหม่ไทย) ตรงกับวันใด?", choices: ["13 เมษายน", "1 มกราคม", "5 ธันวาคม"], ans: 0 },
-      { subject: "สังคมศึกษา 🌏", q: "อาเซียน (ASEAN) มีประเทศสมาชิกทั้งหมดกี่ประเทศ?", choices: ["8 ประเทศ", "10 ประเทศ", "12 ประเทศ"], ans: 1 },
+      { subject: "สังคมศึกษา", q: "เมืองหลวงของประเทศไทยคือข้อใด?", choices: ["เชียงใหม่", "กรุงเทพมหานคร", "ภูเก็ต"], ans: 1 },
+      { subject: "สังคมศึกษา", q: "ทวีปที่มีขนาดใหญ่ที่สุดในโลกคือข้อใด?", choices: ["เอเชีย", "แอฟริกา", "ยุโรป"], ans: 0 },
+      { subject: "สังคมศึกษา", q: "สกุลเงินของประเทศไทยคือข้อใด?", choices: ["ดอลลาร์", "บาท", "เยน"], ans: 1 },
+      { subject: "สังคมศึกษา", q: "แม่น้ำสายหลักที่ไหลผ่านกรุงเทพมหานครคือข้อใด?", choices: ["แม่น้ำเจ้าพระยา", "แม่น้ำโขง", "แม่น้ำปิง"], ans: 0 },
+      { subject: "สังคมศึกษา", q: "วันสงกรานต์ (ปีใหม่ไทย) ตรงกับวันใด?", choices: ["13 เมษายน", "1 มกราคม", "5 ธันวาคม"], ans: 0 },
+      { subject: "สังคมศึกษา", q: "อาเซียน (ASEAN) มีประเทศสมาชิกทั้งหมดกี่ประเทศ?", choices: ["8 ประเทศ", "10 ประเทศ", "12 ประเทศ"], ans: 1 },
 
       // ⚽ พลศึกษา / สุขศึกษา
-      { subject: "พลศึกษา ⚽", q: "การแข่งขันฟุตบอล 1 แมตช์ มีกี่นาที (ไม่รวมทดเวลา)?", choices: ["120 นาที", "100 นาที", "90 นาที"], ans: 2 },
-      { subject: "พลศึกษา ⚽", q: "กีฬาบาสเกตบอล 1 ทีมมีผู้เล่นในสนามกี่คน?", choices: ["5 คน", "7 คน", "11 คน"], ans: 0 },
-      { subject: "พลศึกษา ⚽", q: "กีฬาวอลเลย์บอล 1 ทีมมีผู้เล่นในสนามกี่คน?", choices: ["6 คน", "9 คน", "11 คน"], ans: 0 },
-      { subject: "สุขศึกษา 💪", q: "การออกกำลังกายสม่ำเสมอส่งผลอย่างไร?", choices: ["สุขภาพแข็งแรง", "ทำให้ป่วยง่าย", "ทำให้เหนื่อยตลอดเวลา"], ans: 0 },
-      { subject: "สุขศึกษา 💪", q: "วิตามินซีพบมากในผลไม้ชนิดใด?", choices: ["ส้ม", "มันฝรั่ง", "ข้าว"], ans: 0 },
-      { subject: "สุขศึกษา 💪", q: "วัยเรียนควรนอนหลับให้เพียงพอวันละกี่ชั่วโมง?", choices: ["4-5 ชั่วโมง", "8-10 ชั่วโมง", "15 ชั่วโมง"], ans: 1 },
+      { subject: "พลศึกษา", q: "การแข่งขันฟุตบอล 1 แมตช์ มีกี่นาที (ไม่รวมทดเวลา)?", choices: ["120 นาที", "100 นาที", "90 นาที"], ans: 2 },
+      { subject: "พลศึกษา", q: "กีฬาบาสเกตบอล 1 ทีมมีผู้เล่นในสนามกี่คน?", choices: ["5 คน", "7 คน", "11 คน"], ans: 0 },
+      { subject: "พลศึกษา", q: "กีฬาวอลเลย์บอล 1 ทีมมีผู้เล่นในสนามกี่คน?", choices: ["6 คน", "9 คน", "11 คน"], ans: 0 },
+      { subject: "สุขศึกษา", q: "การออกกำลังกายสม่ำเสมอส่งผลอย่างไร?", choices: ["สุขภาพแข็งแรง", "ทำให้ป่วยง่าย", "ทำให้เหนื่อยตลอดเวลา"], ans: 0 },
+      { subject: "สุขศึกษา", q: "วิตามินซีพบมากในผลไม้ชนิดใด?", choices: ["ส้ม", "มันฝรั่ง", "ข้าว"], ans: 0 },
+      { subject: "สุขศึกษา", q: "วัยเรียนควรนอนหลับให้เพียงพอวันละกี่ชั่วโมง?", choices: ["4-5 ชั่วโมง", "8-10 ชั่วโมง", "15 ชั่วโมง"], ans: 1 },
 
       // 💻 คอมพิวเตอร์ / เทคโนโลยี
-      { subject: "คอมพิวเตอร์ 💻", q: "CPU ย่อมาจากข้อใด?", choices: ["Central Processing Unit", "Computer Personal Unit", "Central Program Unit"], ans: 0 },
-      { subject: "คอมพิวเตอร์ 💻", q: "อินเทอร์เน็ตใช้สำหรับสิ่งใด?", choices: ["เก็บเสื้อผ้า", "เชื่อมต่อและสื่อสารข้อมูล", "ปลูกต้นไม้"], ans: 1 },
-      { subject: "คอมพิวเตอร์ 💻", q: "ไฟล์นามสกุล .jpg เป็นไฟล์ประเภทใด?", choices: ["รูปภาพ", "เพลง", "วิดีโอ"], ans: 0 },
-      { subject: "คอมพิวเตอร์ 💻", q: "WWW ย่อมาจากข้อใด?", choices: ["World Wide Web", "World Wild Web", "Wide World Web"], ans: 0 },
-      { subject: "คอมพิวเตอร์ 💻", q: "อุปกรณ์ใดใช้สำหรับพิมพ์ข้อมูลเข้าเครื่องคอมพิวเตอร์?", choices: ["คีย์บอร์ด", "ลำโพง", "จอภาพ"], ans: 0 },
-      { subject: "คอมพิวเตอร์ 💻", q: "โปรแกรมป้องกันไวรัสคอมพิวเตอร์เรียกว่าอะไร?", choices: ["Antivirus", "Browser", "Printer"], ans: 0 }
+      { subject: "คอมพิวเตอร์", q: "CPU ย่อมาจากข้อใด?", choices: ["Central Processing Unit", "Computer Personal Unit", "Central Program Unit"], ans: 0 },
+      { subject: "คอมพิวเตอร์", q: "อินเทอร์เน็ตใช้สำหรับสิ่งใด?", choices: ["เก็บเสื้อผ้า", "เชื่อมต่อและสื่อสารข้อมูล", "ปลูกต้นไม้"], ans: 1 },
+      { subject: "คอมพิวเตอร์", q: "ไฟล์นามสกุล .jpg เป็นไฟล์ประเภทใด?", choices: ["รูปภาพ", "เพลง", "วิดีโอ"], ans: 0 },
+      { subject: "คอมพิวเตอร์", q: "WWW ย่อมาจากข้อใด?", choices: ["World Wide Web", "World Wild Web", "Wide World Web"], ans: 0 },
+      { subject: "คอมพิวเตอร์", q: "อุปกรณ์ใดใช้สำหรับพิมพ์ข้อมูลเข้าเครื่องคอมพิวเตอร์?", choices: ["คีย์บอร์ด", "ลำโพง", "จอภาพ"], ans: 0 },
+      { subject: "คอมพิวเตอร์", q: "โปรแกรมป้องกันไวรัสคอมพิวเตอร์เรียกว่าอะไร?", choices: ["Antivirus", "Browser", "Printer"], ans: 0 }
     ];
 
     let currentUpgradePlayerId = null;
@@ -872,11 +923,18 @@
       google.script.run.withFailureHandler(function(){}).releasePlayerFromMarket(currentPlayerName, id); // 📌 แจ้งเซิร์ฟเวอร์ให้คืนสิทธิ์ ทีมอื่นจะเห็นนักเตะคนนี้กลับมาในตลาดแบบเรียลไทม์
     }
 
+    // แผนที่ชื่อวิชา -> ไอคอนที่สื่อความหมาย (ใช้แทนอิโมจิเดิม ให้ดูเป็นระบบเดียวกันทั้งหมด)
+    const SUBJECT_ICONS = {
+      'คณิตศาสตร์': 'calculator', 'ภาษาไทย': 'book', 'ภาษาอังกฤษ': 'globe',
+      'วิทยาศาสตร์': 'flask', 'สังคมศึกษา': 'globe', 'พลศึกษา': 'ball',
+      'สุขศึกษา': 'heart', 'คอมพิวเตอร์': 'monitor'
+    };
+
     function openQuiz(event, id) {
       event.stopPropagation(); currentUpgradePlayerId = id;
       const randomQuiz = quizBank[Math.floor(Math.random() * quizBank.length)];
       currentCorrectAnswerIndex = randomQuiz.ans;
-      document.getElementById('quizSubject').innerText = randomQuiz.subject;
+      document.getElementById('quizSubject').innerHTML = icon(SUBJECT_ICONS[randomQuiz.subject] || 'book', 14) + randomQuiz.subject;
       document.getElementById('quizQuestion').innerText = randomQuiz.q;
       
       let quizHtml = '';
@@ -933,10 +991,10 @@
             p.price += PRICE_GAIN_PER_CORRECT;
             Swal.fire({
               icon: 'success',
-              title: 'ตอบถูกต้อง! 🎉',
+              title: 'ตอบถูกต้อง!',
               html: gain > 0
                 ? `<b>${p.fname}</b> ได้รับการฝึกฝน<br>พลังเพิ่มขึ้น <span style="color:#22c55e; font-weight:700;">+${gain.toFixed(1)}</span> (ปัจจุบัน <b>${formatOvr(p.ovr)}</b>)`
-                : `<b>${p.fname}</b> พลังเต็มขีดสุดแล้ว (99.0) 🔥`,
+                : `<b>${p.fname}</b> พลังเต็มขีดสุดแล้ว (99.0)`,
               confirmButtonColor: '#3b82f6',
               confirmButtonText: 'เยี่ยมมาก!',
               background: '#1e293b',
@@ -946,7 +1004,7 @@
         } else {
           Swal.fire({
             icon: 'error',
-            title: 'ตอบผิดครับ ❌',
+            title: 'ตอบผิดครับ',
             text: 'ไม่เป็นไร ลองติวรอบใหม่ได้เลย',
             confirmButtonColor: '#ef4444',
             confirmButtonText: 'สู้ๆ',
@@ -998,7 +1056,7 @@
             pitchHtml += `
               <div class="pitch-slot pitch-player ${isSelected ? 'selected-slot' : ''} ${isWrongPos ? 'wrong-pos' : ''}" 
                    style="top: ${pos.top}; left: ${pos.left}; background: ${getPosColor(p.position)}; border: ${borderColor}" 
-                   onclick="handlePitchClick(${index})" title="${isWrongPos ? '⚠️ ลงผิดตำแหน่ง! ควรเล่น ' + pos.type + ' แต่ถนัด ' + p.position + ' (พลังลดลง)' : ''}">
+                   onclick="handlePitchClick(${index})" title="${isWrongPos ? 'ลงผิดตำแหน่ง! ควรเล่น ' + pos.type + ' แต่ถนัด ' + p.position + ' (พลังลดลง)' : ''}">
                 ${formatOvr(displayOvr)}
                 <div class="pitch-player-name">${p.fname}</div>
               </div>`;
@@ -1007,10 +1065,10 @@
             if (isSelected) {
               pitchHtml += `
                 <div class="pitch-action-menu" style="top: calc(${pos.top} - 6px); left: ${pos.left};" onclick="event.stopPropagation()">
-                  <button class="pam-btn pam-sell" onclick="sellFromPitch(${index})">💰 ขาย</button>
-                  <button class="pam-btn pam-upgrade" onclick="openQuiz(event, '${playerId}')">⭐ อัพเกรด</button>
-                  <button class="pam-btn pam-bench" onclick="benchFromPitch(${index})">🔁 สำรอง</button>
-                  <button class="pam-btn pam-close" onclick="closePitchMenu()">✕</button>
+                  <button class="pam-btn pam-sell" onclick="sellFromPitch(${index})">${icon('coin', 13)}ขาย</button>
+                  <button class="pam-btn pam-upgrade" onclick="openQuiz(event, '${playerId}')">${icon('star', 13)}อัพเกรด</button>
+                  <button class="pam-btn pam-bench" onclick="benchFromPitch(${index})">${icon('repeat', 13)}สำรอง</button>
+                  <button class="pam-btn pam-close" onclick="closePitchMenu()">${icon('close', 12)}</button>
                 </div>`;
             }
           }
@@ -1029,7 +1087,7 @@
           const p = allPlayers.find(x => x.studentId === id);
           if (p) {
             const isSelected = selectedItem && selectedItem.type === 'bench' && selectedItem.id === id;
-            benchHtml += `<div class="bench-card ${isSelected ? 'selected-bench' : ''}" onclick="handleBenchClick('${id}')"><button class="btn-release" onclick="releasePlayer(event, '${id}')">ขาย</button><span class="pos-badge" style="background:${getPosColor(p.position)}; color:${p.position==='GK'?'#000':'#fff'}; align-self:flex-start;">${p.position}</span><div style="font-size:14px; font-weight:600; text-align:center;">${p.fname}</div><div class="ovr-badge" style="margin:0; padding:2px 8px; font-size:14px;">พลัง ${formatOvr(p.ovr)}</div><button class="btn-upgrade" onclick="openQuiz(event, '${id}')">⭐ ติวเข้ม!</button></div>`;
+            benchHtml += `<div class="bench-card ${isSelected ? 'selected-bench' : ''}" onclick="handleBenchClick('${id}')"><button class="btn-release" onclick="releasePlayer(event, '${id}')">ขาย</button><span class="pos-badge" style="background:${getPosColor(p.position)}; color:${p.position==='GK'?'#000':'#fff'}; align-self:flex-start;">${p.position}</span><div style="font-size:14px; font-weight:600; text-align:center;">${p.fname}</div><div class="ovr-badge" style="margin:0; padding:2px 8px; font-size:14px;">พลัง ${formatOvr(p.ovr)}</div><button class="btn-upgrade" onclick="openQuiz(event, '${id}')">${icon('star', 12)}ติวเข้ม!</button></div>`;
           }
         }
       });
@@ -1272,7 +1330,7 @@
     // ============ ระบบท้าแข่งสด (ฝั่งผู้ท้า) ============
     function attemptLiveChallenge(opponentName, opponentOvr, userOvr) {
       Swal.fire({
-        title: '📡 กำลังส่งคำท้าแข่งสด...',
+        title: icon('radio', 18) + 'กำลังส่งคำท้าแข่งสด...',
         html: `กำลังรอ <b>${opponentName}</b> ตอบรับคำท้า (ไม่เกิน 20 วิ)`,
         allowOutsideClick: false,
         showConfirmButton: false,
@@ -1353,12 +1411,12 @@
       let secondsLeft = 15;
       let countdownInterval = null;
       Swal.fire({
-        title: isCup ? '🏆 ถูกท้าแข่งบอลถ้วย!' : '⚔️ ถูกท้าแข่ง!',
+        title: isCup ? (icon('trophy', 18) + 'ถูกท้าแข่งบอลถ้วย!') : (icon('swords', 18) + 'ถูกท้าแข่ง!'),
         html: `<b>${challenge.challenger}</b> ท้าคุณแข่ง${isCup ? 'บอลถ้วยข้ามลีก' : 'ลีกภูมิภาค'}แบบสด!<br>เหลือเวลาตอบรับ <span id="challengeCountdown">15</span> วินาที`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: '✅ ตอบรับ',
-        cancelButtonText: '❌ ปฏิเสธ',
+        confirmButtonText: icon('check', 13) + 'ตอบรับ',
+        cancelButtonText: icon('cross', 13) + 'ปฏิเสธ',
         confirmButtonColor: isCup ? '#8b5cf6' : '#22c55e',
         cancelButtonColor: '#ef4444',
         background: '#1e293b', color: '#f8fafc',
@@ -1421,7 +1479,7 @@
         return;
       }
       if (cupState.champion) {
-        statusText.innerText = "สถานะ: 🏆 แชมป์เปี้ยนส์ถ้วยข้ามลีก!";
+        statusText.innerHTML = "สถานะ: " + icon('trophy', 15) + "แชมป์เปี้ยนส์ถ้วยข้ามลีก!";
         statusText.style.color = "#fbbf24";
         btnCup.style.display = 'none';
         return;
@@ -1532,7 +1590,7 @@
     // ============ ระบบท้าแข่งสด (ถ้วยข้ามลีก - ฝั่งผู้ท้า) ============
     function attemptLiveCupChallenge(opponentName, opponentOvr, userOvr, roundIdx) {
       Swal.fire({
-        title: '📡 กำลังส่งคำท้าแข่งบอลถ้วย...',
+        title: icon('radio', 18) + 'กำลังส่งคำท้าแข่งบอลถ้วย...',
         html: `กำลังรอ <b>${opponentName}</b> ตอบรับคำท้า (ไม่เกิน 20 วิ)`,
         allowOutsideClick: false,
         showConfirmButton: false,
@@ -1605,7 +1663,7 @@
             html += '</div>';
           });
           html += '</div>';
-          Swal.fire({ title: '🏆 ผังสายถ้วยข้ามลีก', html: html, confirmButtonColor: '#8b5cf6', background: '#1e293b', color: '#f8fafc', width: 600 });
+          Swal.fire({ title: icon('trophy', 18) + 'ผังสายถ้วยข้ามลีก', html: html, confirmButtonColor: '#8b5cf6', background: '#1e293b', color: '#f8fafc', width: 600 });
         })
         .withFailureHandler(function() {})
         .getCupState();
@@ -1614,7 +1672,7 @@
     // 🔧 แอดมิน/ครู: กดเริ่มถ้วย (ดึง Top 2 ของทุกกลุ่มลีกกลาง มาจับสายน็อคเอาท์)
     function openAdminCupPanel() {
       Swal.fire({
-        title: '🔧 เริ่มฟุตบอลถ้วยข้ามลีก',
+        title: icon('settings', 18) + 'เริ่มฟุตบอลถ้วยข้ามลีก',
         input: 'password',
         inputPlaceholder: 'รหัสแอดมิน/ครู',
         showCancelButton: true,
@@ -1663,7 +1721,7 @@
       }
 
       // ตั้งค่าหน้าจอโหมด "กำลังแข่งขัน"
-      document.getElementById('matchModalTitle').innerText = "🔴 กำลังแข่งขันสด...";
+      document.getElementById('matchModalTitle').innerHTML = '<span class="pulse-dot"></span>กำลังแข่งขันสด...';
       document.getElementById('nameUser').innerText = userTeamName;
       document.getElementById('nameAI').innerText = oppTeamName;
       document.getElementById('scoreUser').innerText = "0";
@@ -1719,14 +1777,14 @@
           ball.style.left = ev.team === 'user' ? '92%' : '8%';
           ball.style.top = '50%';
 
-          flash.innerText = "⚽ ประตู! " + scorerName + " ทำประตู!";
+          flash.innerHTML = icon('ball', 16) + " ประตู! " + scorerName + " ทำประตู!";
           flash.classList.add('show');
           if (flashTimeout) clearTimeout(flashTimeout);
           flashTimeout = setTimeout(() => flash.classList.remove('show'), 1300);
 
           const line = document.createElement('div');
           line.className = 'goal-line';
-          line.innerText = "⚽ นาทีที่ " + minute + "' - " + scorerName + " ยิงประตู!";
+          line.innerHTML = icon('ball', 13) + " นาทีที่ " + minute + "' - " + scorerName + " ยิงประตู!";
           eventsLog.appendChild(line);
           eventsLog.scrollTop = eventsLog.scrollHeight;
         }
@@ -1778,8 +1836,8 @@
           events = "หมดเวลาเสมอกัน ต้องตัดสินด้วยจุดโทษ... ";
       }
 
-      if(ug > ag) events += `⚽ ทีมของคุณสามารถเอาชนะและผ่านเกมนี้ไปได้! <br>💪 นักเตะตัวจริงทั้ง 11 คนได้รับประสบการณ์ พลังเพิ่มขึ้น <span style="color:#22c55e; font-weight:700;">+${OVR_GAIN_PER_WIN.toFixed(2)}</span> ต่อคน<br>`;
-      else if (ag > ug) events += `⚽ ทางฝั่ง ${oppName} อาศัยความแน่นอนกว่า เอาชนะไปได้<br>`;
+      if(ug > ag) events += `${icon('check', 15)} ทีมของคุณสามารถเอาชนะและผ่านเกมนี้ไปได้! <br>${icon('trendUp', 15)} นักเตะตัวจริงทั้ง 11 คนได้รับประสบการณ์ พลังเพิ่มขึ้น <span style="color:#22c55e; font-weight:700;">+${OVR_GAIN_PER_WIN.toFixed(2)}</span> ต่อคน<br>`;
+      else if (ag > ug) events += `${icon('trendDown', 15)} ทางฝั่ง ${oppName} อาศัยความแน่นอนกว่า เอาชนะไปได้<br>`;
       else events += `จับมือแบ่งแต้มกันไปอย่างสุดมันส์`;
       
       document.getElementById('matchEvents').innerHTML = events;
@@ -1789,23 +1847,23 @@
         cupMsg.style.display = 'block';
         if (lastCupResult === 'win') {
           const prizeText = formatCurrency(leaguePrize || 0);
-          cupMsg.innerHTML = `🎉 ยินดีด้วย! ทีมของคุณผ่านเข้ารอบ และรับเงินรางวัล ${prizeText}`;
+          cupMsg.innerHTML = `${icon('trophy', 16)} ยินดีด้วย! ทีมของคุณผ่านเข้ารอบ และรับเงินรางวัล ${prizeText}`;
           cupMsg.style.color = "#22c55e";
         } else {
-          cupMsg.innerHTML = `❌ เสียใจด้วย ทีมของคุณตกรอบฟุตบอลถ้วยไปอย่างน่าเสียดาย`;
+          cupMsg.innerHTML = `${icon('cross', 16)} เสียใจด้วย ทีมของคุณตกรอบฟุตบอลถ้วยไปอย่างน่าเสียดาย`;
           cupMsg.style.color = "#ef4444";
         }
       } else {
         // 📌 แจ้งเงินรางวัลจากการแข่งขันลีก
         cupMsg.style.display = 'block';
         if (ug > ag) {
-          cupMsg.innerHTML = `🎉 ชนะการแข่งขัน! รับเงินรางวัล ${formatCurrency(leaguePrize)}`;
+          cupMsg.innerHTML = `${icon('trophy', 16)} ชนะการแข่งขัน! รับเงินรางวัล ${formatCurrency(leaguePrize)}`;
           cupMsg.style.color = "#22c55e";
         } else if (ug === ag) {
-          cupMsg.innerHTML = `🤝 เสมอกัน ไม่ได้รับเงินรางวัลในนัดนี้`;
+          cupMsg.innerHTML = `${icon('equal', 16)} เสมอกัน ไม่ได้รับเงินรางวัลในนัดนี้`;
           cupMsg.style.color = "#eab308";
         } else {
-          cupMsg.innerHTML = `😢 แพ้การแข่งขัน ได้รับเงินปลอบใจ ${formatCurrency(leaguePrize)}`;
+          cupMsg.innerHTML = `${icon('trendDown', 16)} แพ้การแข่งขัน ได้รับเงินปลอบใจ ${formatCurrency(leaguePrize)}`;
           cupMsg.style.color = "#ef4444";
         }
       }
