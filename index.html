@@ -795,7 +795,7 @@
       document.getElementById('squadCount').innerText = squad.length;
     }
 
-    function formatOvr(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+    function formatOvr(v) { return (Math.round(v * 100) / 100).toFixed(2); }
 
     function createMarketCard(p) {
       const color = getPosColor(p.position);
@@ -879,6 +879,27 @@
     // 📌 การเพิ่มพลังต่อการตอบถูก 1 ครั้ง: เพิ่มแบบทศนิยมทีละนิด เพื่อให้รู้สึกท้าทายและเห็นความคืบหน้าละเอียดขึ้น
     const OVR_GAIN_PER_CORRECT = 0.2;
     const PRICE_GAIN_PER_CORRECT = 2000000;
+
+    // 📌 การเพิ่มพลังนักเตะตัวจริง (11 คนบนสนาม) ทุกครั้งที่ทีมชนะการแข่งขัน (ลีก/ถ้วย) — เพิ่มทีละนิดมาก (+0.01) ต่อ 1 ชัยชนะ
+    const OVR_GAIN_PER_WIN = 0.01;
+
+    // เรียกหลังจบแมตช์ที่ทีมของเราชนะ: ไล่อัปเกรดนักเตะตัวจริงทั้ง 11 คนที่ลงสนามทีละ 0.01 (สูงสุดไม่เกิน 99.00)
+    function upgradeStartingXIOnWin() {
+      let upgradedCount = 0;
+      pitchPositions.forEach(function(id) {
+        if (!id) return;
+        const p = allPlayers.find(x => x.studentId === id);
+        if (p && p.ovr < 99) {
+          p.ovr = Math.min(99, Math.round((p.ovr + OVR_GAIN_PER_WIN) * 100) / 100);
+          upgradedCount++;
+        }
+      });
+      if (upgradedCount > 0) {
+        markDirty();
+        renderTactics();
+      }
+      return upgradedCount;
+    }
 
     function checkAnswer(selectedIndex, btnEl) {
       const allBtns = document.querySelectorAll('#quizOptions button');
@@ -1201,7 +1222,10 @@
       isLastMatchCup = false;
       // 📌 คำนวณเงินรางวัล: ชนะ = 50, แพ้ = 25, เสมอ = 0
       let leaguePrize = 0;
-      if (res.ug > res.ag) leaguePrize = LEAGUE_PRIZE_WIN;
+      if (res.ug > res.ag) {
+        leaguePrize = LEAGUE_PRIZE_WIN;
+        upgradeStartingXIOnWin(); // 📌 ชนะแมตช์ลีก: อัปเกรดนักเตะตัวจริงทีละ +0.01
+      }
       else if (res.ug < res.ag) leaguePrize = LEAGUE_PRIZE_LOSE;
       else leaguePrize = LEAGUE_PRIZE_DRAW;
       if (leaguePrize > 0) { clubBudget += leaguePrize; updateBudgetDisplay(); }
@@ -1449,7 +1473,10 @@
       const wonMatch = res.ug > res.ag;
       lastCupResult = wonMatch ? 'win' : 'lose';
       let prize = 0;
-      if (wonMatch) { prize = (roundIdx + 1) * 10000000; clubBudget += prize; updateBudgetDisplay(); }
+      if (wonMatch) {
+        prize = (roundIdx + 1) * 10000000; clubBudget += prize; updateBudgetDisplay();
+        upgradeStartingXIOnWin(); // 📌 ชนะแมตช์ถ้วย: อัปเกรดนักเตะตัวจริงทีละ +0.01
+      }
       markDirty();
 
       if (shouldRecord) {
@@ -1718,7 +1745,7 @@
           events = "หมดเวลาเสมอกัน ต้องตัดสินด้วยจุดโทษ... ";
       }
 
-      if(ug > ag) events += `⚽ ทีมของคุณสามารถเอาชนะและผ่านเกมนี้ไปได้! <br>`;
+      if(ug > ag) events += `⚽ ทีมของคุณสามารถเอาชนะและผ่านเกมนี้ไปได้! <br>💪 นักเตะตัวจริงทั้ง 11 คนได้รับประสบการณ์ พลังเพิ่มขึ้น <span style="color:#22c55e; font-weight:700;">+${OVR_GAIN_PER_WIN.toFixed(2)}</span> ต่อคน<br>`;
       else if (ag > ug) events += `⚽ ทางฝั่ง ${oppName} อาศัยความแน่นอนกว่า เอาชนะไปได้<br>`;
       else events += `จับมือแบ่งแต้มกันไปอย่างสุดมันส์`;
       
