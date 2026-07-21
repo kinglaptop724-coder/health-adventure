@@ -374,6 +374,7 @@
 
     let allPlayers = [];
     let squad = []; 
+    let marketOwnership = {}; // 📌 สถานะตลาดแบบเรียลไทม์: { studentId: ownerName } ใครเซ็นสัญญานักเตะคนไหนไปแล้วบ้าง (ซิงค์จากเซิร์ฟเวอร์)
     let pitchPositions = Array(11).fill(null);
     let selectedItem = null; 
     let clubBudget = 200000000; 
@@ -535,6 +536,21 @@
     // 📌 เช็คทุกๆ 4 วิ ว่ามีเพื่อนส่งคำท้าแข่งสดเข้ามาไหม
     setInterval(checkForIncomingChallenge, 4000);
 
+    // 📌 ซิงค์สถานะตลาดทุกๆ 6 วิ เพื่อให้เห็นแบบเรียลไทม์ว่าใครเซ็นสัญญานักเตะคนไหนไปแล้วบ้าง (กันแย่งซื้อซ้ำ)
+    setInterval(refreshMarketState, 6000);
+
+    function refreshMarketState() {
+      if (!gameStarted || !currentPlayerName) return;
+      google.script.run
+        .withSuccessHandler(function(state) {
+          if (!state || state.error) return;
+          marketOwnership = state;
+          filterPlayers(); // อัปเดตหน้าจอตลาดทันทีถ้ามีนักเตะที่หายไป/กลับมา
+        })
+        .withFailureHandler(function() {})
+        .getMarketState();
+    }
+
     // เซฟทันทีแบบเงียบๆ ถ้าผู้เล่นสลับแท็บ/ปิดหน้าจอไปในขณะที่ยังมีข้อมูลค้างไม่ได้บันทึก
     document.addEventListener('visibilitychange', function() {
       if (document.visibilityState === 'hidden' && isDirty) silentAutoSave();
@@ -678,14 +694,22 @@
         setupFilters(); updateBudgetDisplay(); filterPlayers(); renderTactics(); renderLeagueTable(); updateCupStatus();
         gameStarted = true; // 📌 เปิดใช้งานระบบบันทึกอัตโนมัติหลังจากโหลด/สร้างข้อมูลเริ่มต้นเสร็จสมบูรณ์แล้วเท่านั้น
         google.script.run.withFailureHandler(function(){}).pingOnline(currentPlayerName); // แจ้งออนไลน์ทันที ไม่ต้องรอ heartbeat รอบแรก
+        refreshMarketState(); // 📌 ซิงค์สถานะตลาดทันทีหลังเข้าเกม ไม่ต้องรอรอบโพลแรก (6 วิ)
       }
 
-      // ต้องรอให้รายชื่อบัญชี (ชีตผู้เล่น 16Kr3NrC0JfafYUaARtp6VINoX9fNdg9gVwk8GBtOvZQ คอลัมน์ A) โหลดเสร็จก่อนเสมอ
-      // เพื่อให้ชื่อทีมในตารางคะแนนเป็นชื่อผู้เล่นจริง ไม่ว่าจะเป็นลีกใหม่หรือลีกที่เคยเซฟไว้ก็ตาม
+      // ต้องรอให้ (1) รายชื่อบัญชี และ (2) สถานะตลาดปัจจุบัน โหลดเสร็จก่อนเสมอ
+      // เพื่อให้ชื่อทีมในตารางคะแนนถูกต้อง และตลาดไม่โชว์นักเตะที่มีคนอื่นเซ็นสัญญาไปแล้วให้เห็นเป็นแวบแรก
+      const marketStatePromise = new Promise(function(resolve) {
+        google.script.run
+          .withSuccessHandler(function(state) { if (state && !state.error) marketOwnership = state; resolve(); })
+          .withFailureHandler(function() { resolve(); })
+          .getMarketState();
+      });
+
       if (!accountNamesLoaded && accountNamesPromise) {
-        accountNamesPromise.then(finishInit);
+        Promise.all([accountNamesPromise, marketStatePromise]).then(finishInit);
       } else {
-        finishInit();
+        marketStatePromise.then(finishInit);
       }
     }
 
@@ -774,6 +798,7 @@
       
       allPlayers.forEach(p => {
         if(squad.includes(p.studentId)) return; 
+        if(marketOwnership[p.studentId] && marketOwnership[p.studentId] !== currentPlayerName) return; // 📌 ถูกทีมอื่นเซ็นสัญญาไปแล้วแบบเรียลไทม์
         if(p.fullname.toLowerCase().includes(text) || p.studentId.includes(text)) {
           if((sClass === "" || p.class === sClass) && (sRoom === "" || p.room === sRoom) && (sPos === "" || p.position === sPos)) {
             marketHtml += createMarketCard(p);
@@ -809,12 +834,33 @@
       if(squad.length >= 20) return Swal.fire({ icon: 'warning', title: 'ทีมเต็มแล้ว!', text: 'โควต้าทีมสูงสุด 20 คน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
       const p = allPlayers.find(x => x.studentId === id);
       if(clubBudget < p.price) return Swal.fire({ icon: 'warning', title: 'งบประมาณไม่พอ!', text: `คุณต้องใช้เงิน ${formatCurrency(p.price)} ในการเซ็นสัญญานักเตะคนนี้`, confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
-      clubBudget -= p.price; updateBudgetDisplay();
-      squad.push(id);
-      const emptyIndex = pitchPositions.findIndex(val => val === null);
-      if(emptyIndex !== -1) pitchPositions[emptyIndex] = id;
-      markDirty();
-      filterPlayers(); renderTactics();
+
+      // 📌 เช็คสถานะตลาดที่ซิงค์ล่าสุดก่อนกันไว้ชั้นหนึ่ง (เผื่อเพิ่งมีคนอื่นเซ็นไปแต่ยังไม่ถึงรอบโพล)
+      if(marketOwnership[id] && marketOwnership[id] !== currentPlayerName) {
+        Swal.fire({ icon: 'error', title: 'ช้าไปหน่อย!', text: 'นักเตะคนนี้ถูกทีมอื่นเซ็นสัญญาไปก่อนแล้ว', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+        return filterPlayers();
+      }
+
+      // 📌 ยืนยันการเซ็นสัญญากับเซิร์ฟเวอร์กลางก่อนเสมอ เพื่อกันสองคนเซ็นนักเตะคนเดียวกันพร้อมกัน (real-time lock)
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if(!res || !res.success) {
+            marketOwnership[id] = (res && res.owner) || 'unknown';
+            Swal.fire({ icon: 'error', title: 'ช้าไปหน่อย!', text: (res && res.message) || 'นักเตะคนนี้ถูกเซ็นสัญญาไปแล้ว', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+            return filterPlayers();
+          }
+          marketOwnership[id] = currentPlayerName;
+          clubBudget -= p.price; updateBudgetDisplay();
+          squad.push(id);
+          const emptyIndex = pitchPositions.findIndex(val => val === null);
+          if(emptyIndex !== -1) pitchPositions[emptyIndex] = id;
+          markDirty();
+          filterPlayers(); renderTactics();
+        })
+        .withFailureHandler(function() {
+          Swal.fire({ icon: 'error', title: 'เชื่อมต่อไม่สำเร็จ', text: 'ลองเซ็นสัญญาอีกครั้ง', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+        })
+        .signPlayerOnMarket(currentPlayerName, id, p.price);
     }
 
     function releasePlayer(event, id) {
@@ -824,8 +870,10 @@
       squad = squad.filter(sid => sid !== id);
       pitchPositions = pitchPositions.map(val => val === id ? null : val);
       if(selectedItem && selectedItem.id === id) selectedItem = null;
+      delete marketOwnership[id]; // 📌 คืนนักเตะกลับตลาดกลางทันทีในหน้าจอตัวเอง
       markDirty();
       filterPlayers(); renderTactics();
+      google.script.run.withFailureHandler(function(){}).releasePlayerFromMarket(currentPlayerName, id); // 📌 แจ้งเซิร์ฟเวอร์ให้คืนสิทธิ์ ทีมอื่นจะเห็นนักเตะคนนี้กลับมาในตลาดแบบเรียลไทม์
     }
 
     function openQuiz(event, id) {
