@@ -827,6 +827,16 @@
       }
 
       // 📌 ยืนยันการเซ็นสัญญากับเซิร์ฟเวอร์กลางก่อนเสมอ เพื่อกันสองคนเซ็นนักเตะคนเดียวกันพร้อมกัน (real-time lock)
+      Swal.fire({
+        title: 'กำลังเซ็นสัญญา...',
+        html: 'กำลังยืนยันกับเซิร์ฟเวอร์กลาง กรุณารอสักครู่',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        background: '#1e293b', color: '#f8fafc',
+        didOpen: () => { Swal.showLoading(); }
+      });
+
       google.script.run
         .withSuccessHandler(function(res) {
           if(!res || !res.success) {
@@ -840,6 +850,7 @@
           const emptyIndex = pitchPositions.findIndex(val => val === null);
           if(emptyIndex !== -1) pitchPositions[emptyIndex] = id;
           markDirty();
+          Swal.close();
           filterPlayers(); renderTactics();
         })
         .withFailureHandler(function() {
@@ -1194,15 +1205,26 @@
       const opponentOvr = opp.ovr || 50;
 
       // 📌 เช็คว่าคู่แข่งที่สุ่มได้ ออนไลน์อยู่ไหม ณ ตอนนี้ ถ้าออนไลน์ -> ส่งคำท้าแข่งสด ถ้าไม่ -> จำลองผลทันทีโดยใช้ค่าพลังทีมล่าสุดของเขา
+      Swal.fire({
+        title: 'กำลังค้นหาคู่แข่ง...',
+        html: `กำลังตรวจสอบสถานะของ <b>${opponentName}</b>`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        background: '#1e293b', color: '#f8fafc',
+        didOpen: () => { Swal.showLoading(); }
+      });
+
       google.script.run
         .withSuccessHandler(function(statusMap) {
           if (statusMap && statusMap[opponentName]) {
             attemptLiveChallenge(opponentName, opponentOvr, userOvr);
           } else {
+            Swal.close();
             runInstantSimMatch(opponentName, opponentOvr, userOvr);
           }
         })
-        .withFailureHandler(function() { runInstantSimMatch(opponentName, opponentOvr, userOvr); })
+        .withFailureHandler(function() { Swal.close(); runInstantSimMatch(opponentName, opponentOvr, userOvr); })
         .getOnlineStatus([opponentName]);
     }
 
@@ -1446,15 +1468,26 @@
       const roundIdx = cupState.round || 0;
 
       // 📌 เช็คว่าคู่แข่งในผังสายออนไลน์อยู่ไหม ถ้าออนไลน์ -> ส่งคำท้าแข่งสด ถ้าไม่ -> จำลองผลทันทีจากค่าพลังทีม ณ ตอนเริ่มถ้วย
+      Swal.fire({
+        title: 'กำลังค้นหาคู่แข่ง...',
+        html: `กำลังตรวจสอบสถานะของ <b>${opponentName}</b>`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        background: '#1e293b', color: '#f8fafc',
+        didOpen: () => { Swal.showLoading(); }
+      });
+
       google.script.run
         .withSuccessHandler(function(statusMap) {
           if (statusMap && statusMap[opponentName]) {
             attemptLiveCupChallenge(opponentName, opponentOvr, userOvr, roundIdx);
           } else {
+            Swal.close();
             runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx);
           }
         })
-        .withFailureHandler(function() { runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx); })
+        .withFailureHandler(function() { Swal.close(); runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx); })
         .getOnlineStatus([opponentName]);
     }
 
