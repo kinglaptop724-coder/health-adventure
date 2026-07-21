@@ -1,163 +1,1554 @@
 <!DOCTYPE html>
-<html lang="th">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Adventure Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #2D6A4F;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --accent: #52b788;
-        }
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    :root {
+      --bg-dark: #0f172a; --panel-bg: #1e293b; --card-bg: #334155; --primary: #3b82f6;
+      --pitch-1: #1a4d2e; --pitch-2: #153f25; --text-main: #f8fafc; --text-muted: #94a3b8;
+      --pos-gk: #eab308; --pos-df: #3b82f6; --pos-mf: #22c55e; --pos-fw: #ef4444;
+      --gold: #fbbf24; --cup-bg: #8b5cf6;
+    }
 
-        body {
-            font-family: 'IBM Plex Sans Thai', sans-serif;
-            background: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            color: #333;
-        }
+    body { font-family: 'IBM Plex Sans Thai', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; }
+    header { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, #1e3a8a 0%, #0f172a 100%); padding: 15px 30px; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+    
+    .budget-display { background: rgba(0,0,0,0.4); padding: 8px 15px; border-radius: 8px; border: 1px solid var(--gold); display: flex; align-items: center; gap: 10px; }
+    .budget-label { font-size: 14px; color: var(--gold); font-weight: 600; }
+    .budget-value { font-size: 22px; font-weight: 700; color: #fff; }
+    
+    .btn-save-game { background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: 'IBM Plex Sans Thai'; margin-left: 15px;}
+    .btn-save-game:hover { background: #059669; }
 
-        #game {
-            max-width: 600px;
-            margin: auto;
-        }
+    .container { display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
+    .panel { background: var(--panel-bg); padding: 20px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); flex: 1; min-width: 320px; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-bg); padding-bottom: 10px; margin-bottom: 15px; }
+    .panel-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+    .filter-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    select, input[type="text"], input[type="password"] { padding: 10px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: white; font-family: 'IBM Plex Sans Thai', sans-serif; outline: none; transition: 0.3s; }
+    select { flex: 1; cursor: pointer; } input[type="text"] { flex: 2; }
+    
+    .fm-card { position: relative; background: var(--card-bg); border-left: 5px solid var(--primary); border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .player-info { flex: 1; }
+    .player-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;}
+    .player-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+    
+    .pos-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #000; }
+    .price-tag { font-size: 13px; font-weight: 700; color: var(--gold); background: rgba(251, 191, 36, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: auto; }
+    
+    .stats-grid { display: flex; gap: 10px; font-size: 11px; font-weight: 500; }
+    .stat-box { background: #0f172a; padding: 4px 8px; border-radius: 4px; display: flex; flex-direction: column; align-items: center;}
+    .stat-val { font-size: 14px; font-weight: 700; }
+    .stat-excellent { color: #22c55e; } .stat-good { color: #eab308; } .stat-poor { color: #ef4444; }
+    .ovr-badge { font-size: 18px; font-weight: 700; padding: 5px 10px; border-radius: 6px; background: #000; margin-right: 15px; color: white; }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin-bottom: 20px;
-        }
+    button { font-family: 'IBM Plex Sans Thai', sans-serif; font-weight: 600; cursor: pointer; border: none; padding: 6px 12px; border-radius: 6px; transition: 0.2s; }
+    .btn-sign { background-color: #22c55e; color: #fff; } .btn-sign:hover { background-color: #16a34a; }
+    .btn-release { background-color: #ef4444; color: #fff; padding: 4px 8px; font-size: 11px; } .btn-release:hover { background-color: #dc2626; }
+    .btn-upgrade { background-color: #8b5cf6; color: #fff; padding: 4px 8px; font-size: 11px; margin-top: 5px; width: 100%; box-sizing: border-box;} 
+    .btn-upgrade:hover { background-color: #7c3aed; }
+    
+    .btn-play { background-color: var(--gold); color: #000; font-size: 14px; padding: 10px 15px; box-shadow: 0 4px 10px rgba(251, 191, 36, 0.4); }
+    .btn-play:hover { background-color: #f59e0b; transform: translateY(-2px); }
+    
+    .btn-cup { background-color: var(--cup-bg); color: #fff; font-size: 14px; padding: 10px 15px; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4); }
+    .btn-cup:hover { background-color: #7c3aed; transform: translateY(-2px); }
 
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: 600;
-            color: #444;
-        }
+    .tactics-panel { flex: 1.5; display: flex; flex-direction: column; gap: 15px; }
+    .pitch-container { background: repeating-linear-gradient( 0deg, var(--pitch-1), var(--pitch-1) 10%, var(--pitch-2) 10%, var(--pitch-2) 20% ); border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; position: relative; width: 100%; height: 500px; overflow: hidden; }
+    
+    .pitch-lines { position: absolute; inset: 0; pointer-events: none; border: 2px solid rgba(255,255,255,0.3); margin: 10px; }
+    .pitch-lines::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.3); }
+    .pitch-lines::after { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; }
+    .box-top { position: absolute; top: 0; left: 25%; right: 25%; height: 15%; border: 2px solid rgba(255,255,255,0.3); border-top: none; }
+    .box-bottom { position: absolute; bottom: 0; left: 25%; right: 25%; height: 15%; border: 2px solid rgba(255,255,255,0.3); border-bottom: none; }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-family: 'IBM Plex Sans Thai', sans-serif;
-        }
+    .pitch-slot { position: absolute; transform: translate(-50%, -50%); width: 50px; height: 50px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; z-index: 10; transition: 0.2s; }
+    .slot-empty { background: rgba(0,0,0,0.5); border: 2px dashed #94a3b8; color: #94a3b8; font-size: 20px; }
+    .slot-empty:hover { background: rgba(255,255,255,0.2); border-color: white; color: white; }
+    .pitch-player { border: 2px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.5); color: #000; font-weight: bold; font-size: 13px; }
+    .pitch-player-name { position: absolute; bottom: -20px; background: rgba(0,0,0,0.7); color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; white-space: nowrap; font-weight: normal; }
+    
+    .bench-container { background: #0f172a; padding: 15px; border-radius: 8px; display: flex; gap: 10px; overflow-x: auto; min-height: 80px; align-items: center; }
+    .bench-card { background: var(--card-bg); border-radius: 6px; padding: 8px; min-width: 120px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; position: relative; border: 2px solid transparent; transition: 0.2s; }
+    .bench-card:hover { border-color: var(--primary); }
+    .bench-card .btn-release { position: absolute; top: -5px; right: -5px; border-radius: 50%; width: 20px; height: 20px; padding: 0; line-height: 18px; text-align: center; }
+    
+    .selected-slot { box-shadow: 0 0 15px 5px #eab308 !important; border-color: #eab308 !important; transform: translate(-50%, -50%) scale(1.1); }
+    .wrong-pos { animation: wrongPosPulse 1.1s ease-in-out infinite; }
+    @keyframes wrongPosPulse {
+      0%   { box-shadow: 0 0 6px 2px rgba(239, 68, 68, 0.6);  transform: translate(-50%, -50%) scale(1); }
+      50%  { box-shadow: 0 0 18px 8px rgba(239, 68, 68, 0.95); transform: translate(-50%, -50%) scale(1.12); }
+      100% { box-shadow: 0 0 6px 2px rgba(239, 68, 68, 0.6);  transform: translate(-50%, -50%) scale(1); }
+    }
+    .selected-bench { border-color: #eab308 !important; box-shadow: 0 0 15px 2px #eab308; transform: scale(1.05); }
 
-        button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 25px;
-            border: none;
-            border-radius: 10px;
-            background: var(--primary-color);
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
+    /* Pitch player action popup (ขาย / อัพเกรด / สำรอง) */
+    .pitch-action-menu { position: absolute; transform: translate(-50%, -100%); display: flex; gap: 4px; background: rgba(15, 23, 42, 0.97); padding: 6px; border-radius: 10px; border: 1px solid var(--gold); box-shadow: 0 6px 16px rgba(0,0,0,0.6); z-index: 30; white-space: nowrap; align-items: center; animation: pamPopIn 0.15s ease-out; }
+    @keyframes pamPopIn { from { opacity: 0; transform: translate(-50%, -100%) scale(0.85); } to { opacity: 1; transform: translate(-50%, -100%) scale(1); } }
+    .pam-btn { font-size: 11px; font-weight: 700; padding: 6px 9px; border-radius: 6px; border: none; cursor: pointer; color: #fff; white-space: nowrap; }
+    .pam-sell { background: #ef4444; }
+    .pam-upgrade { background: #8b5cf6; }
+    .pam-bench { background: #3b82f6; }
+    .pam-close { background: transparent; color: #94a3b8; font-size: 13px; padding: 6px 4px; }
 
-        button:hover {
-            background: var(--accent);
-        }
+    /* League & Cup Styles */
+    .league-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 14px; }
+    .league-table th { background: #0f172a; color: var(--gold); padding: 12px 8px; font-weight: 600; white-space: nowrap; }
+    .league-table td { padding: 10px 8px; border-bottom: 1px solid #475569; }
+    .league-table tr:hover { background: rgba(255,255,255,0.05); }
+    .league-table .user-team { font-weight: bold; background: rgba(59, 130, 246, 0.15); border-left: 4px solid var(--primary); }
+    .table-container { overflow-x: auto; background: var(--card-bg); border-radius: 8px; }
 
-        #result {
-            padding-top: 10px;
-            text-align: center;
-        }
+    .cup-status-bar { background: rgba(139, 92, 246, 0.2); border: 1px solid var(--cup-bg); padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .cup-title { font-weight: bold; color: #c4b5fd; display: flex; align-items: center; gap: 8px; }
 
-        .status-box {
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-        }
-    </style>
+    /* Modal Styles */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: var(--panel-bg); padding: 25px 20px; border-radius: 12px; width: 90%; max-width: 420px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.7); border: 2px solid var(--primary); }
+    .modal-content h3 { margin-top: 0; color: var(--gold); }
+    
+    .score-board { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; margin: 20px 0; background: #0f172a; padding: 15px 10px; border-radius: 8px; border: 1px solid #475569; }
+    .team-name { font-size: 15px; font-weight: 700; line-height: 1.3; overflow-wrap: break-word; word-break: break-word; }
+    .score-box { font-size: 26px; font-weight: 700; color: var(--gold); background: #000; padding: 6px 14px; border-radius: 6px; white-space: nowrap; }
+    
+    .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; }
+    .stat-label { width: 100px; text-align: center; color: var(--text-muted); }
+    .stat-bar-bg { flex: 1; background: #0f172a; height: 8px; border-radius: 4px; position: relative; overflow: hidden; margin: 0 10px; }
+    .stat-bar-fill { position: absolute; top: 0; height: 100%; transition: 1s; }
+    .stat-bar-left { right: 0; background: var(--primary); }
+    .stat-bar-right { left: 0; background: #ef4444; }
+    .stat-num { width: 30px; font-weight: bold; }
+
+    .match-events { text-align: left; background: #0f172a; padding: 12px; border-radius: 6px; margin: 15px 0; font-size: 13px; max-height: 100px; overflow-y: auto; color: #cbd5e1; }
+    .btn-close { background: #ef4444; margin-top: 10px; width: 100%; padding: 10px; font-size: 16px; color: white; }
+
+    /* Live Match Animation */
+    .live-clock { font-weight: 700; color: var(--gold); text-align: center; font-size: 14px; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .live-clock .pulse-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-right: 6px; animation: pulseDot 1s infinite; }
+    @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+    .mini-pitch { position: relative; width: 100%; height: 150px; background: repeating-linear-gradient(90deg, #16a34a, #16a34a 20px, #15803d 20px, #15803d 40px); border: 2px solid rgba(255,255,255,0.5); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+    .mini-pitch-center-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(255,255,255,0.45); }
+    .mini-pitch-circle { position: absolute; top: 50%; left: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border: 2px solid rgba(255,255,255,0.45); border-radius: 50%; }
+    .mini-ball { position: absolute; font-size: 20px; left: 50%; top: 50%; transform: translate(-50%, -50%); transition: left 0.4s ease, top 0.4s ease; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.6)); z-index: 2; }
+    .goal-flash { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 10px; font-size: 20px; font-weight: 800; color: #fff; background: rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transition: opacity 0.25s ease; text-shadow: 0 2px 4px #000; z-index: 3; }
+    .goal-flash.show { opacity: 1; }
+    .live-events { text-align: left; background: #0f172a; padding: 10px; border-radius: 6px; margin: 0 0 15px; font-size: 12px; max-height: 90px; overflow-y: auto; color: #cbd5e1; }
+    .live-events .goal-line { color: var(--gold); font-weight: 700; padding: 2px 0; }
+
+    /* Login Form Specific */
+    .login-form { text-align: left; margin: 20px 0; }
+    .login-form label { font-size: 14px; color: var(--gold); font-weight: 600; margin-bottom: 5px; display: block; }
+    .login-form input { width: 100%; box-sizing: border-box; margin-bottom: 15px; padding: 12px; font-size: 16px; }
+
+    /* Quiz Modal (ติวเข้ม) */
+    #quizModal .modal-content { max-width: 460px; border-color: var(--gold); background: linear-gradient(160deg, #1e293b 0%, #111827 100%); position: relative; overflow: hidden; }
+    .quiz-subject-badge { display: inline-block; background: rgba(251, 191, 36, 0.15); color: var(--gold); border: 1px solid rgba(251, 191, 36, 0.5); font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 20px; margin-bottom: 14px; }
+    .quiz-question-box { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px; margin-bottom: 18px; font-size: 17px; font-weight: 600; line-height: 1.5; color: #f8fafc; }
+    .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+    .quiz-options button { width: 100%; box-sizing: border-box; background: #334155; color: #f8fafc; border: 2px solid #475569; padding: 13px 16px; border-radius: 10px; font-size: 15px; text-align: left; transition: 0.15s; }
+    .quiz-options button:hover:not(:disabled) { background: #3b82f6; border-color: #60a5fa; transform: translateX(3px); }
+    .quiz-options button:disabled { cursor: default; opacity: 0.55; }
+    .quiz-options button.opt-correct { background: #16a34a !important; border-color: #22c55e !important; opacity: 1 !important; }
+    .quiz-options button.opt-wrong { background: #dc2626 !important; border-color: #ef4444 !important; opacity: 1 !important; }
+    .quiz-power-note { margin-top: 14px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+    #loading { text-align: center; padding: 50px; font-size: 20px; color: var(--primary); display: none; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: var(--bg-dark); } ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+  </style>
 </head>
 <body>
 
-<div id="game">
-    <div class="header">
-        <h1>🏥 ระบบวิเคราะห์สุขภาพเบื้องต้น</h1>
+  <!-- หน้าจอเข้าสู่ระบบ (อัปเดตระบบพิมพ์ค้นหาชื่อ) -->
+  <div id="loginOverlay" class="modal-overlay" style="display: flex;">
+    <div class="modal-content" style="border-color: var(--gold); max-width: 350px;">
+      <h2 style="color: var(--gold); margin-top: 0;">⚽<br>DMC FOOTBALL<br>MANAGER</h2>
+      <p style="color: var(--text-muted); font-size: 14px;">กรุณาเข้าสู่ระบบเพื่อจัดการทีมของคุณ</p>
+      
+      <div class="login-form">
+        <label>ชื่อผู้เล่น / ทีม</label>
+        <!-- เปลี่ยนจาก <select> เป็น <input> คู่กับ <datalist> เพื่อให้พิมพ์ค้นหาได้ -->
+        <input type="text" id="loginName" list="accountNamesList" placeholder="กำลังโหลดรายชื่อ..." autocomplete="off">
+        <datalist id="accountNamesList"></datalist>
+        
+        <label>รหัสผ่าน</label>
+        <input type="password" id="loginPassword" placeholder="กรอกรหัสผ่านของคุณ">
+      </div>
+      
+      <button class="btn-play" style="width: 100%; padding: 12px; font-size: 16px;" onclick="attemptLogin()">เข้าสู่ระบบ</button>
+      <div id="loginStatus" style="color: #ef4444; margin-top: 15px; font-size: 14px; min-height: 20px;"></div>
     </div>
+  </div>
 
-    <div class="card">
-        <label>ชื่อ-นามสกุล</label>
-        <input id="name" type="text" placeholder="กรอกชื่อผู้ป่วย">
-
-        <label>อายุ</label>
-        <input id="age" type="number" placeholder="กรอกอายุ">
-
-        <label>อาการเบื้องต้น</label>
-        <select id="fever"><option value="0">ไม่มีไข้</option><option value="1">ไข้ต่ำ</option><option value="2">ไข้สูง</option></select>
-        <select id="cough"><option value="0">ไม่ไอ</option><option value="1">ไอแห้ง</option><option value="2">ไอมีเสมหะ</option></select>
-        <select id="breath"><option value="0">หายใจปกติ</option><option value="2">เหนื่อยหอบเล็กน้อย</option><option value="3">หอบเหนื่อยรุนแรง</option></select>
-        <select id="eat"><option value="0">ทานได้ปกติ</option><option value="2">ทานไม่ได้</option></select>
-
-        <button onclick="analyze()">ประมวลผลการวิเคราะห์</button>
+  <header id="mainHeader" style="display: none;">
+    <h1>⚽ DMC FOOTBALL MANAGER</h1>
+    <div style="display:flex; align-items:center;">
+      <div class="budget-display">
+        <span class="budget-label">งบประมาณสโมสร:</span>
+        <span class="budget-value" id="budgetText">฿200.0M</span>
+      </div>
+      <button class="btn-save-game" id="btnSaveGame" onclick="saveGameData()">💾 บันทึกเกม</button>
     </div>
+  </header>
+  
+  <div id="loading">กำลังเตรียมความพร้อมของทีม...</div>
 
-    <div class="card" id="result-card" style="display:none;">
-        <h2>📋 ผลการประเมิน</h2>
-        <div id="result"></div>
-    </div>
-</div>
-
-<script>
-function analyze(){
-    let name = document.getElementById("name").value;
-    let age = parseInt(document.getElementById("age").value) || 0;
+  <div class="container" id="gameUI" style="display:none;">
     
-    let fever = parseInt(document.getElementById("fever").value);
-    let cough = parseInt(document.getElementById("cough").value);
-    let breath = parseInt(document.getElementById("breath").value);
-    let eat = parseInt(document.getElementById("eat").value);
+    <div class="panel">
+      <div class="panel-header">
+        <h2>📊 ตลาดนักเตะดาวรุ่ง</h2>
+        <span style="font-size: 12px; background: var(--primary); padding: 4px 8px; border-radius: 12px;">ในทีม: <span id="squadCount">0</span>/20</span>
+      </div>
+      
+      <div class="filter-group">
+        <select id="classFilter" onchange="filterPlayers()"><option value="">- ทุกชั้น -</option></select>
+        <select id="roomFilter" onchange="filterPlayers()"><option value="">- ทุกห้อง -</option></select>
+        <select id="posFilter" onchange="filterPlayers()">
+          <option value="">- ทุกตำแหน่ง -</option>
+          <option value="GK">GK - ผู้รักษาประตู</option>
+          <option value="CB">CB - กองหลัง</option>
+          <option value="LB">LB - แบ็กซ้าย</option>
+          <option value="RB">RB - แบ็กขวา</option>
+          <option value="CDM">CDM - กลางรับ</option>
+          <option value="CM">CM - กองกลาง</option>
+          <option value="CAM">CAM - กลางรุก</option>
+          <option value="LW">LW - ปีกซ้าย</option>
+          <option value="RW">RW - ปีกขวา</option>
+          <option value="ST">ST - กองหน้า</option>
+        </select>
+      </div>
+      <input type="text" id="searchInput" placeholder="พิมพ์ชื่อนักเตะเพื่อค้นหา..." onkeyup="filterPlayers()" style="width:100%; margin-bottom:15px; box-sizing:border-box;">
 
-    let score = fever + cough + breath + eat;
-    if(age >= 60) score += 2;
+      <div id="marketPlayers" style="max-height: 600px; overflow-y: auto; padding-right: 5px;"></div>
+    </div>
 
-    let diagnosis = "";
-    let color = "";
-    let advice = "";
+    <div class="panel tactics-panel">
+      <div class="panel-header" style="flex-wrap: wrap;">
+        <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
+          <h2>👕 จัดแผนการเล่น</h2>
+          <select id="formationSelect" onchange="changeFormation()" style="max-width: 120px; padding: 5px;">
+            <option value="4-4-2">4-4-2</option><option value="4-3-3">4-3-3</option>
+            <option value="4-2-3-1">4-2-3-1</option><option value="3-5-2">3-5-2</option>
+          </select>
+          <span style="font-size: 12px; background: #000; padding: 4px 8px; border-radius: 4px; color: var(--gold);">
+            พลังทีมรวม: <span id="teamOvrDisplay">0</span>
+          </span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-play" onclick="playMatch()">▶ แข่งลีกภูมิภาค</button>
+          <button class="btn-cup" id="btnCup" onclick="playCupMatch()">🏆 แข่งบอลถ้วยข้ามลีก</button>
+        </div>
+      </div>
+      
+      <div class="cup-status-bar">
+        <div class="cup-title">🏆 ฟุตบอลถ้วยข้ามลีก (ต่างจังหวัด)</div>
+        <div style="font-weight: 600; font-size: 14px;" id="cupStatusText">สถานะ: รอบ 16 ทีมสุดท้าย</div>
+      </div>
+      
+      <div class="pitch-container" id="pitchArea">
+        <div class="pitch-lines"><div class="box-top"></div><div class="box-bottom"></div></div>
+        <div id="pitchSlots"></div>
+      </div>
 
-    // logic สำหรับการวิเคราะห์เบื้องต้น
-    if(score === 0) {
-        diagnosis = "สุขภาพปกติดี";
-        color = "#2D6A4F";
-        advice = "พักผ่อนให้เพียงพอและรักษาสุขอนามัย";
-    } else if(score <= 4) {
-        diagnosis = "เฝ้าระวังอาการ (กลุ่มอาการหวัดเบื้องต้น)";
-        color = "#e9c46a";
-        advice = "ควรดื่มน้ำมากๆ และสังเกตอาการภายใน 24 ชม.";
-    } else {
-        diagnosis = "เสี่ยงต่อภาวะติดเชื้อหรืออาการรุนแรง";
-        color = "#e76f51";
-        advice = "ควรพบแพทย์เพื่อวินิจฉัยโดยละเอียดโดยเร็ว";
+      <div class="panel-header" style="margin-top: 10px; margin-bottom: 5px; padding-bottom: 5px;">
+        <h2>🪑 ม้านั่งสำรอง</h2>
+      </div>
+      <div class="bench-container" id="benchArea"></div>
+    </div>
+
+    <!-- แผงตารางคะแนน -->
+    <div class="panel" style="flex: 100%;">
+      <div class="panel-header">
+        <h2>🏅 ตารางคะแนนลีกภูมิภาค</h2>
+      </div>
+      <div class="table-container">
+        <table class="league-table">
+          <thead>
+            <tr>
+              <th>อันดับ</th><th style="text-align:left;">สโมสร</th><th>แข่ง</th><th>ชนะ</th><th>เสมอ</th><th>แพ้</th><th>ได้</th><th>เสีย</th><th>ต่าง</th><th>คะแนน</th>
+            </tr>
+          </thead>
+          <tbody id="leagueTableBody">
+            <!-- ข้อมูลลีกจะถูกสร้างด้วย JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal สำหรับติวเข้ม -->
+  <div id="quizModal" class="modal-overlay" style="z-index: 2000;">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 4px;">📚 ห้องติวเข้ม</h3>
+      <span class="quiz-subject-badge" id="quizSubject">หมวดวิชา</span>
+      <div class="quiz-question-box" id="quizQuestion">คำถามจะแสดงที่นี่...</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-power-note">⚡ ตอบถูกแต่ละครั้ง พลังจะค่อยๆ เพิ่มขึ้นทีละนิด</div>
+      <button class="btn-close" onclick="closeQuiz()">ยกเลิกการติว</button>
+    </div>
+  </div>
+
+  <!-- Modal สรุปผลการแข่งขัน -->
+  <div id="matchModal" class="modal-overlay" style="z-index: 2000;">
+    <div class="modal-content">
+      <h3 id="matchModalTitle">จบการแข่งขัน</h3>
+      
+      <div class="score-board">
+        <div class="team-name" id="nameUser" style="text-align: right; color: var(--primary);">ทีมของคุณ</div>
+        <div class="score-box"><span id="scoreUser">0</span> - <span id="scoreAI">0</span></div>
+        <div class="team-name" id="nameAI" style="text-align: left; color: #ef4444;">คู่แข่ง</div>
+      </div>
+
+      <div id="matchLiveArea" style="display:none;">
+        <div class="live-clock"><span class="pulse-dot"></span>นาทีที่ <span id="liveMinute">0</span>'</div>
+        <div class="mini-pitch" id="miniPitch">
+          <div class="mini-pitch-center-line"></div>
+          <div class="mini-pitch-circle"></div>
+          <div class="mini-ball" id="miniBall">⚽</div>
+          <div class="goal-flash" id="goalFlash"></div>
+        </div>
+        <div class="live-events" id="liveEventsLog"></div>
+      </div>
+
+      <div id="matchStatsContainer"></div>
+      <div class="match-events" id="matchEvents"></div>
+      
+      <div id="cupResultMsg" style="font-weight: bold; color: var(--gold); margin-bottom: 15px; display: none;"></div>
+      
+      <button class="btn-close" id="matchCloseBtn" style="background: var(--primary);" onclick="closeMatchModal()">ดำเนินการต่อ</button>
+    </div>
+  </div>
+
+  <script>
+    // ================== GAS-API SHIM (สำหรับ host ไฟล์นี้นอก Apps Script เช่น GitHub Pages) ==================
+    // ถ้าไฟล์นี้ถูกเปิดผ่าน Apps Script (HtmlService) โดยตรง ตัวแปร google.script.run จะมีอยู่แล้วโดยอัตโนมัติ
+    // ถ้าไม่มี (เช่น host แยกบน GitHub Pages) จะสร้างของจำลองขึ้นมาเอง โดยยิง fetch() ไปหา Apps Script Web App แทน
+    // สิ่งที่ต้องแก้: เปลี่ยน GAS_API_URL ด้านล่างให้เป็น URL ของ Web App ที่ Deploy ไว้ (.../exec)
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      var GAS_API_URL = 'https://script.google.com/macros/s/PUT_YOUR_DEPLOYMENT_ID_HERE/exec'; // 👉 แก้เป็น URL Web App จริงของคุณ
+
+      var __makeGasRunner = function(successHandler, failureHandler) {
+        return new Proxy({}, {
+          get: function(target, prop) {
+            if (prop === 'withSuccessHandler') {
+              return function(fn) { return __makeGasRunner(fn, failureHandler); };
+            }
+            if (prop === 'withFailureHandler') {
+              return function(fn) { return __makeGasRunner(successHandler, fn); };
+            }
+            // ชื่อฟังก์ชันฝั่งเซิร์ฟเวอร์ที่ถูกเรียก เช่น getPlayersData, verifyLogin ฯลฯ
+            return function() {
+              var args = Array.prototype.slice.call(arguments);
+              fetch(GAS_API_URL, {
+                method: 'POST',
+                // ⚠️ ต้องใช้ text/plain เท่านั้น เพื่อเลี่ยง CORS preflight (OPTIONS) ที่ Apps Script ไม่รองรับ
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ fn: prop, args: args })
+              })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                  if (res && res.__gasError) {
+                    if (failureHandler) failureHandler(new Error(res.__gasError));
+                  } else if (successHandler) {
+                    successHandler(res);
+                  }
+                })
+                .catch(function(err) {
+                  if (failureHandler) failureHandler(err);
+                });
+            };
+          }
+        });
+      };
+
+      window.google = { script: { run: __makeGasRunner(null, null) } };
+    }
+    // ================== จบ GAS-API SHIM ==================
+
+    let allPlayers = [];
+    let squad = []; 
+    let pitchPositions = Array(11).fill(null);
+    let selectedItem = null; 
+    let clubBudget = 200000000; 
+    let currentPlayerName = "ทีมของคุณ"; 
+    let loadedSaveData = null; 
+    let allAccountNames = []; // 📌 ตัวแปรเก็บรายชื่อผู้เล่นทั้งหมดจากชีตบัญชี
+    let accountNamesLoaded = false;
+    let accountNamesPromise = null;
+
+    // --- เริ่มต้นโหลดชื่อบัญชี ---
+    window.onload = function() { 
+      accountNamesPromise = new Promise(function(resolve) {
+        google.script.run.withSuccessHandler(function(data) {
+          populateAccountNames(data);
+          resolve();
+        }).getAccountNames();
+      });
+    };
+
+    function populateAccountNames(data) {
+      const nameInput = document.getElementById('loginName');
+      const dataList = document.getElementById('accountNamesList');
+      
+      if(data.error) {
+        nameInput.placeholder = "พบปัญหาการเชื่อมต่อ";
+        document.getElementById('loginStatus').innerText = "ข้อผิดพลาด: " + data.error;
+        return;
+      }
+      
+      allAccountNames = data; // เก็บชื่อทั้งหมดไว้ใช้สร้างทีมในลีก
+      accountNamesLoaded = true;
+      
+      nameInput.placeholder = "พิมพ์ชื่อ หรือคลิกเพื่อค้นหา...";
+      dataList.innerHTML = '';
+      let listHtml = '';
+      data.forEach(name => {
+        listHtml += `<option value="${name}">`;
+      });
+      dataList.innerHTML = listHtml;
     }
 
-    document.getElementById("result-card").style.display = "block";
-    document.getElementById("result").innerHTML = `
-        <div class="status-box" style="background:${color}20; color:${color}; border: 2px solid ${color}">
-            <h3>${diagnosis}</h3>
-            <p style="color: #333;"><b>ผู้ป่วย:</b> ${name || 'ไม่ระบุชื่อ'}</p>
-            <p style="color: #333;"><b>คะแนนประเมิน:</b> ${score} คะแนน</p>
-            <p><b>คำแนะนำ:</b> ${advice}</p>
-        </div>
-    `;
-}
-</script>
+    function attemptLogin() {
+      const name = document.getElementById('loginName').value;
+      const pwd = document.getElementById('loginPassword').value;
+      const statusEl = document.getElementById('loginStatus');
+      
+      if(!name) return statusEl.innerText = "กรุณาพิมพ์หรือเลือกชื่อบัญชีของท่าน";
+      if(!pwd) return statusEl.innerText = "กรุณากรอกรหัสผ่าน";
+      
+      statusEl.style.color = "#fbbf24";
+      statusEl.innerText = "กำลังตรวจสอบข้อมูล...";
+      
+      google.script.run.withSuccessHandler(handleLoginResult).verifyLogin(name, pwd);
+    }
 
+    function handleLoginResult(res) {
+      const statusEl = document.getElementById('loginStatus');
+      if(res.success) {
+        currentPlayerName = res.playerName;
+        
+        if(res.saveData) {
+           try {
+             loadedSaveData = JSON.parse(res.saveData);
+             console.log("พบข้อมูลเซฟของผู้เล่น โหลดข้อมูลแล้ว");
+           } catch(e) {
+             console.log("ไม่มีข้อมูลเซฟเดิม หรือไฟล์พัง ระบบจะเริ่มใหม่");
+           }
+        }
+        
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainHeader').style.display = 'flex';
+        document.getElementById('loading').style.display = 'block';
+        
+        google.script.run.withSuccessHandler(initGame).getPlayersData();
+      } else {
+        statusEl.style.color = "#ef4444";
+        statusEl.innerText = res.message;
+      }
+    }
+
+    function buildSavePayload() {
+      return {
+        budget: clubBudget,
+        squad: squad,
+        pitch: pitchPositions,
+        league: leagueTeams,
+        cupRound: currentCupRound
+      };
+    }
+
+    function saveGameData() {
+      const btn = document.getElementById('btnSaveGame');
+      btn.innerText = "⏳ กำลังบันทึก...";
+      btn.style.background = "#fbbf24";
+      btn.disabled = true;
+
+      const jsonString = JSON.stringify(buildSavePayload());
+
+      google.script.run.withSuccessHandler(function(res) {
+        if(res.success) {
+          isDirty = false;
+          btn.innerText = "✅ บันทึกแล้ว";
+          btn.style.background = "#3b82f6"; 
+          setTimeout(() => { 
+            btn.innerText = "💾 บันทึกเกม"; 
+            btn.style.background = "#10b981"; 
+            btn.disabled = false;
+          }, 2000);
+        } else {
+          Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: res.message, confirmButtonColor: '#ef4444', background: '#1e293b', color: '#f8fafc' });
+          btn.innerText = "💾 บันทึกเกม";
+          btn.style.background = "#10b981";
+          btn.disabled = false;
+        }
+      }).savePlayerData(currentPlayerName, jsonString);
+    }
+
+    // 📌 ระบบบันทึกอัตโนมัติแบบเรียลไทม์ — ทำงานเงียบๆ อยู่เบื้องหลัง ไม่มีป็อปอัปหรือข้อความใดๆ ให้ผู้เล่นเห็น
+    let isDirty = false;
+    let isAutoSaving = false;
+    let gameStarted = false;
+    let autoSaveDebounceTimer = null;
+
+    // เรียกทุกครั้งที่มีการเปลี่ยนแปลงข้อมูลที่ต้องเซฟ (งบ/นักเตะในทีม/ตำแหน่งในสนาม/ตารางลีก/รอบถ้วย)
+    function markDirty() {
+      if (!gameStarted) return;
+      isDirty = true;
+      clearTimeout(autoSaveDebounceTimer);
+      autoSaveDebounceTimer = setTimeout(silentAutoSave, 3000); // รอ 3 วินาทีหลังหยุดการกระทำล่าสุดแล้วค่อยเซฟ
+    }
+
+    function silentAutoSave() {
+      if (!gameStarted || !isDirty || isAutoSaving || !currentPlayerName) return;
+      isAutoSaving = true;
+      const jsonString = JSON.stringify(buildSavePayload());
+      google.script.run
+        .withSuccessHandler(function(res) {
+          isAutoSaving = false;
+          if (res && res.success) isDirty = false;
+          // ไม่แสดง UI ใดๆ ทั้งสิ้น — ผู้เล่นจะไม่รู้ตัวว่ามีการบันทึกเกิดขึ้น
+        })
+        .withFailureHandler(function() {
+          isAutoSaving = false; // จะลองบันทึกใหม่อัตโนมัติในรอบถัดไปที่มีการเปลี่ยนแปลง
+        })
+        .savePlayerData(currentPlayerName, jsonString);
+    }
+
+    // เผื่อกรณีผู้เล่นเล่นต่อเนื่องจนตัวจับเวลาแบบ debounce ไม่ถูกกระตุ้นให้ทำงานสักที
+    // ให้เช็คทุก 15 วินาทีว่ามีข้อมูลค้างที่ยังไม่ได้เซฟหรือไม่ ถ้ามีก็บันทึกให้ทันที (ยังคงเงียบเหมือนเดิม)
+    setInterval(function() { if (isDirty) silentAutoSave(); }, 15000);
+
+    // 📌 heartbeat บอกเซิร์ฟเวอร์ว่า "ฉันยังออนไลน์อยู่" ทุกๆ 20 วิ (ใช้เช็คตอนเพื่อนจะส่งคำท้าแข่งสด)
+    setInterval(function() {
+      if (gameStarted && currentPlayerName) {
+        google.script.run.withFailureHandler(function(){}).pingOnline(currentPlayerName);
+      }
+    }, 20000);
+
+    // 📌 เช็คทุกๆ 4 วิ ว่ามีเพื่อนส่งคำท้าแข่งสดเข้ามาไหม
+    setInterval(checkForIncomingChallenge, 4000);
+
+    // เซฟทันทีแบบเงียบๆ ถ้าผู้เล่นสลับแท็บ/ปิดหน้าจอไปในขณะที่ยังมีข้อมูลค้างไม่ได้บันทึก
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'hidden' && isDirty) silentAutoSave();
+    });
+
+    // 📌 ลบการกำหนดค่าคงที่ของลีกออก และปล่อยว่างไว้รอรับข้อมูลตอนสร้างเกมใหม่
+    let leagueTeams = []; 
+
+    const cupRounds = ["รอบ 16 ทีมสุดท้าย", "รอบ 8 ทีมสุดท้าย", "รอบรองชนะเลิศ", "รอบชิงชนะเลิศ"];
+    let currentCupRound = 0; 
+    
+    const cupOpponents = [
+      { name: "สกลนคร เอฟซี", baseOvr: 72 }, 
+      { name: "อุดรธานี ซิตี้", baseOvr: 78 }, 
+      { name: "ขอนแก่น ยูไนเต็ด", baseOvr: 84 }, 
+      { name: "บุรีรัมย์ อะคาเดมี่", baseOvr: 90 }  
+    ];
+
+    const quizBank = [
+      // 🔢 คณิตศาสตร์
+      { subject: "คณิตศาสตร์ 🔢", q: "25 x 4 เท่ากับเท่าใด?", choices: ["100", "120", "80"], ans: 0 },
+      { subject: "คณิตศาสตร์ 🔢", q: "รากที่สองของ 144 คือข้อใด?", choices: ["14", "12", "16"], ans: 1 },
+      { subject: "คณิตศาสตร์ 🔢", q: "7 x 8 เท่ากับเท่าใด?", choices: ["54", "56", "64"], ans: 1 },
+      { subject: "คณิตศาสตร์ 🔢", q: "100 หาร 4 เท่ากับเท่าใด?", choices: ["20", "25", "40"], ans: 1 },
+      { subject: "คณิตศาสตร์ 🔢", q: "3 ยกกำลัง 3 เท่ากับเท่าใด?", choices: ["9", "27", "81"], ans: 1 },
+      { subject: "คณิตศาสตร์ 🔢", q: "ครึ่งหนึ่งของ 90 คือเท่าใด?", choices: ["40", "45", "50"], ans: 1 },
+      { subject: "คณิตศาสตร์ 🔢", q: "เศษส่วน 1/2 เท่ากับกี่เปอร์เซ็นต์?", choices: ["25%", "50%", "75%"], ans: 1 },
+      { subject: "คณิตศาสตร์ 🔢", q: "มุมฉากมีกี่องศา?", choices: ["45 องศา", "90 องศา", "180 องศา"], ans: 1 },
+      { subject: "คณิตศาสตร์ 🔢", q: "รูปสามเหลี่ยมมีกี่ด้าน?", choices: ["3 ด้าน", "4 ด้าน", "5 ด้าน"], ans: 0 },
+      { subject: "คณิตศาสตร์ 🔢", q: "15 + 27 เท่ากับเท่าใด?", choices: ["42", "32", "52"], ans: 0 },
+
+      // 📖 ภาษาไทย
+      { subject: "ภาษาไทย 📖", q: "คำใดเขียนถูกต้อง?", choices: ["กะเพรา", "กระเพรา", "กะเพา"], ans: 0 },
+      { subject: "ภาษาไทย 📖", q: "คำราชาศัพท์ 'เสวย' หมายถึงข้อใด?", choices: ["กิน", "นอน", "เดิน"], ans: 0 },
+      { subject: "ภาษาไทย 📖", q: "คำใดสะกดถูกต้อง?", choices: ["อนุญาต", "อนุญาติ", "อนุญาศ"], ans: 0 },
+      { subject: "ภาษาไทย 📖", q: "สุนทรภู่แต่งวรรณคดีเรื่องใด?", choices: ["พระอภัยมณี", "ขุนช้างขุนแผน", "รามเกียรติ์"], ans: 0 },
+      { subject: "ภาษาไทย 📖", q: "คำว่า 'มานะ' หมายถึงข้อใด?", choices: ["ความเพียรพยายาม", "ความขี้เกียจ", "ความเศร้า"], ans: 0 },
+      { subject: "ภาษาไทย 📖", q: "พยัญชนะไทยมีทั้งหมดกี่ตัว?", choices: ["44 ตัว", "40 ตัว", "50 ตัว"], ans: 0 },
+      { subject: "ภาษาไทย 📖", q: "คำว่า 'ประเทศ' มีกี่พยางค์?", choices: ["2 พยางค์", "3 พยางค์", "4 พยางค์"], ans: 0 },
+      { subject: "ภาษาไทย 📖", q: "คำใดต่อไปนี้เป็นคำนาม?", choices: ["วิ่ง", "สวย", "แมว"], ans: 2 },
+
+      // 🌍 English
+      { subject: "ภาษาอังกฤษ 🌍", q: "'Cat' แปลว่าอะไร?", choices: ["สุนัข", "แมว", "นก"], ans: 1 },
+      { subject: "ภาษาอังกฤษ 🌍", q: "คำใดสะกดถูกต้อง?", choices: ["Beautifull", "Beautiful", "Beutiful"], ans: 1 },
+      { subject: "ภาษาอังกฤษ 🌍", q: "'I ___ a student.' เติมคำใด?", choices: ["is", "am", "are"], ans: 1 },
+      { subject: "ภาษาอังกฤษ 🌍", q: "คำตรงข้ามของ 'Big' คือข้อใด?", choices: ["Small", "Tall", "Fast"], ans: 0 },
+      { subject: "ภาษาอังกฤษ 🌍", q: "'Water' แปลว่าอะไร?", choices: ["น้ำ", "ไฟ", "ดิน"], ans: 0 },
+      { subject: "ภาษาอังกฤษ 🌍", q: "รูปพหูพจน์ของ 'Child' คือข้อใด?", choices: ["Childs", "Children", "Childes"], ans: 1 },
+      { subject: "ภาษาอังกฤษ 🌍", q: "'How ___ are you?' เติมคำใด?", choices: ["old", "age", "years"], ans: 0 },
+      { subject: "ภาษาอังกฤษ 🌍", q: "'Sunday' คือวันใด?", choices: ["วันจันทร์", "วันอาทิตย์", "วันเสาร์"], ans: 1 },
+
+      // 🔬 วิทยาศาสตร์
+      { subject: "วิทยาศาสตร์ 🔬", q: "น้ำเดือดที่อุณหภูมิกี่องศาเซลเซียส (ระดับน้ำทะเล)?", choices: ["90 องศา", "100 องศา", "120 องศา"], ans: 1 },
+      { subject: "วิทยาศาสตร์ 🔬", q: "โลกโคจรรอบดวงอาทิตย์ครบ 1 รอบใช้เวลาประมาณกี่วัน?", choices: ["365 วัน", "30 วัน", "24 ชั่วโมง"], ans: 0 },
+      { subject: "วิทยาศาสตร์ 🔬", q: "อวัยวะใดทำหน้าที่สูบฉีดเลือด?", choices: ["ปอด", "หัวใจ", "ตับ"], ans: 1 },
+      { subject: "วิทยาศาสตร์ 🔬", q: "พืชใช้ก๊าซใดในการสังเคราะห์แสง?", choices: ["ออกซิเจน", "คาร์บอนไดออกไซด์", "ไนโตรเจน"], ans: 1 },
+      { subject: "วิทยาศาสตร์ 🔬", q: "ดาวเคราะห์ดวงใดอยู่ใกล้ดวงอาทิตย์ที่สุด?", choices: ["ดาวศุกร์", "ดาวพุธ", "โลก"], ans: 1 },
+      { subject: "วิทยาศาสตร์ 🔬", q: "สัตว์ในข้อใดเป็นสัตว์เลี้ยงลูกด้วยนม?", choices: ["ปลา", "วาฬ", "งู"], ans: 1 },
+      { subject: "วิทยาศาสตร์ 🔬", q: "แรงโน้มถ่วงของโลกทำให้เกิดสิ่งใด?", choices: ["วัตถุลอยขึ้น", "วัตถุตกลงสู่พื้น", "วัตถุหมุนรอบตัวเอง"], ans: 1 },
+      { subject: "วิทยาศาสตร์ 🔬", q: "น้ำแข็งอยู่ในสถานะใด?", choices: ["ของเหลว", "ของแข็ง", "แก๊ส"], ans: 1 },
+
+      // 🌏 สังคมศึกษา
+      { subject: "สังคมศึกษา 🌏", q: "เมืองหลวงของประเทศไทยคือข้อใด?", choices: ["เชียงใหม่", "กรุงเทพมหานคร", "ภูเก็ต"], ans: 1 },
+      { subject: "สังคมศึกษา 🌏", q: "ทวีปที่มีขนาดใหญ่ที่สุดในโลกคือข้อใด?", choices: ["เอเชีย", "แอฟริกา", "ยุโรป"], ans: 0 },
+      { subject: "สังคมศึกษา 🌏", q: "สกุลเงินของประเทศไทยคือข้อใด?", choices: ["ดอลลาร์", "บาท", "เยน"], ans: 1 },
+      { subject: "สังคมศึกษา 🌏", q: "แม่น้ำสายหลักที่ไหลผ่านกรุงเทพมหานครคือข้อใด?", choices: ["แม่น้ำเจ้าพระยา", "แม่น้ำโขง", "แม่น้ำปิง"], ans: 0 },
+      { subject: "สังคมศึกษา 🌏", q: "วันสงกรานต์ (ปีใหม่ไทย) ตรงกับวันใด?", choices: ["13 เมษายน", "1 มกราคม", "5 ธันวาคม"], ans: 0 },
+      { subject: "สังคมศึกษา 🌏", q: "อาเซียน (ASEAN) มีประเทศสมาชิกทั้งหมดกี่ประเทศ?", choices: ["8 ประเทศ", "10 ประเทศ", "12 ประเทศ"], ans: 1 },
+
+      // ⚽ พลศึกษา / สุขศึกษา
+      { subject: "พลศึกษา ⚽", q: "การแข่งขันฟุตบอล 1 แมตช์ มีกี่นาที (ไม่รวมทดเวลา)?", choices: ["120 นาที", "100 นาที", "90 นาที"], ans: 2 },
+      { subject: "พลศึกษา ⚽", q: "กีฬาบาสเกตบอล 1 ทีมมีผู้เล่นในสนามกี่คน?", choices: ["5 คน", "7 คน", "11 คน"], ans: 0 },
+      { subject: "พลศึกษา ⚽", q: "กีฬาวอลเลย์บอล 1 ทีมมีผู้เล่นในสนามกี่คน?", choices: ["6 คน", "9 คน", "11 คน"], ans: 0 },
+      { subject: "สุขศึกษา 💪", q: "การออกกำลังกายสม่ำเสมอส่งผลอย่างไร?", choices: ["สุขภาพแข็งแรง", "ทำให้ป่วยง่าย", "ทำให้เหนื่อยตลอดเวลา"], ans: 0 },
+      { subject: "สุขศึกษา 💪", q: "วิตามินซีพบมากในผลไม้ชนิดใด?", choices: ["ส้ม", "มันฝรั่ง", "ข้าว"], ans: 0 },
+      { subject: "สุขศึกษา 💪", q: "วัยเรียนควรนอนหลับให้เพียงพอวันละกี่ชั่วโมง?", choices: ["4-5 ชั่วโมง", "8-10 ชั่วโมง", "15 ชั่วโมง"], ans: 1 },
+
+      // 💻 คอมพิวเตอร์ / เทคโนโลยี
+      { subject: "คอมพิวเตอร์ 💻", q: "CPU ย่อมาจากข้อใด?", choices: ["Central Processing Unit", "Computer Personal Unit", "Central Program Unit"], ans: 0 },
+      { subject: "คอมพิวเตอร์ 💻", q: "อินเทอร์เน็ตใช้สำหรับสิ่งใด?", choices: ["เก็บเสื้อผ้า", "เชื่อมต่อและสื่อสารข้อมูล", "ปลูกต้นไม้"], ans: 1 },
+      { subject: "คอมพิวเตอร์ 💻", q: "ไฟล์นามสกุล .jpg เป็นไฟล์ประเภทใด?", choices: ["รูปภาพ", "เพลง", "วิดีโอ"], ans: 0 },
+      { subject: "คอมพิวเตอร์ 💻", q: "WWW ย่อมาจากข้อใด?", choices: ["World Wide Web", "World Wild Web", "Wide World Web"], ans: 0 },
+      { subject: "คอมพิวเตอร์ 💻", q: "อุปกรณ์ใดใช้สำหรับพิมพ์ข้อมูลเข้าเครื่องคอมพิวเตอร์?", choices: ["คีย์บอร์ด", "ลำโพง", "จอภาพ"], ans: 0 },
+      { subject: "คอมพิวเตอร์ 💻", q: "โปรแกรมป้องกันไวรัสคอมพิวเตอร์เรียกว่าอะไร?", choices: ["Antivirus", "Browser", "Printer"], ans: 0 }
+    ];
+
+    let currentUpgradePlayerId = null;
+    let currentCorrectAnswerIndex = null;
+    let isLastMatchCup = false;
+    let lastCupResult = null;
+
+    const formationsData = {
+      '4-4-2': [
+        { top: '88%', left: '50%', type: 'GK' },
+        { top: '70%', left: '15%', type: 'LB' }, { top: '70%', left: '38%', type: 'CB' }, { top: '70%', left: '62%', type: 'CB' }, { top: '70%', left: '85%', type: 'RB' },
+        { top: '45%', left: '15%', type: 'LW' }, { top: '45%', left: '38%', type: 'CM' }, { top: '45%', left: '62%', type: 'CM' }, { top: '45%', left: '85%', type: 'RW' },
+        { top: '20%', left: '35%', type: 'ST' }, { top: '20%', left: '65%', type: 'ST' }
+      ],
+      '4-3-3': [
+        { top: '88%', left: '50%', type: 'GK' },
+        { top: '70%', left: '15%', type: 'LB' }, { top: '70%', left: '38%', type: 'CB' }, { top: '70%', left: '62%', type: 'CB' }, { top: '70%', left: '85%', type: 'RB' },
+        { top: '48%', left: '30%', type: 'CDM' }, { top: '53%', left: '50%', type: 'CM' }, { top: '48%', left: '70%', type: 'CM' },
+        { top: '22%', left: '20%', type: 'LW' }, { top: '15%', left: '50%', type: 'ST' }, { top: '22%', left: '80%', type: 'RW' }
+      ],
+      '4-2-3-1': [
+        { top: '88%', left: '50%', type: 'GK' },
+        { top: '72%', left: '15%', type: 'LB' }, { top: '72%', left: '38%', type: 'CB' }, { top: '72%', left: '62%', type: 'CB' }, { top: '72%', left: '85%', type: 'RB' },
+        { top: '55%', left: '38%', type: 'CDM' }, { top: '55%', left: '62%', type: 'CDM' },
+        { top: '35%', left: '20%', type: 'LW' }, { top: '38%', left: '50%', type: 'CAM' }, { top: '35%', left: '80%', type: 'RW' },
+        { top: '15%', left: '50%', type: 'ST' }
+      ],
+      '3-5-2': [
+        { top: '88%', left: '50%', type: 'GK' },
+        { top: '72%', left: '25%', type: 'CB' }, { top: '72%', left: '50%', type: 'CB' }, { top: '72%', left: '75%', type: 'CB' },
+        { top: '48%', left: '15%', type: 'LB' }, { top: '55%', left: '35%', type: 'CM' }, { top: '55%', left: '65%', type: 'CM' }, { top: '48%', left: '85%', type: 'RB' },
+        { top: '40%', left: '50%', type: 'CAM' },
+        { top: '20%', left: '35%', type: 'ST' }, { top: '20%', left: '65%', type: 'ST' }
+      ]
+    };
+
+    function initGame(data) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('gameUI').style.display = 'flex';
+      if(data.error) return Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: data.error, confirmButtonColor: '#ef4444', background: '#1e293b', color: '#f8fafc' });
+      
+      allPlayers = data;
+      
+      if (loadedSaveData) {
+        clubBudget = loadedSaveData.budget || 200000000;
+        squad = loadedSaveData.squad || [];
+        pitchPositions = loadedSaveData.pitch || Array(11).fill(null);
+        if (loadedSaveData.cupRound !== undefined) currentCupRound = loadedSaveData.cupRound;
+      }
+
+      const needsNewLeague = !(loadedSaveData && loadedSaveData.league);
+
+      function finishInit() {
+        if (needsNewLeague) createNewLeague();
+        else leagueTeams = loadedSaveData.league;
+        syncLeagueTeamNames(); // 📌 อัปเดตชื่อทีมคู่แข่งให้ตรงกับชื่อผู้เล่นจริงจากชีตบัญชีเสมอ (แก้ทั้งลีกใหม่และลีกที่เคยเซฟไว้)
+        setupFilters(); updateBudgetDisplay(); filterPlayers(); renderTactics(); renderLeagueTable(); updateCupStatus();
+        gameStarted = true; // 📌 เปิดใช้งานระบบบันทึกอัตโนมัติหลังจากโหลด/สร้างข้อมูลเริ่มต้นเสร็จสมบูรณ์แล้วเท่านั้น
+        google.script.run.withFailureHandler(function(){}).pingOnline(currentPlayerName); // แจ้งออนไลน์ทันที ไม่ต้องรอ heartbeat รอบแรก
+      }
+
+      // ต้องรอให้รายชื่อบัญชี (ชีตผู้เล่น 16Kr3NrC0JfafYUaARtp6VINoX9fNdg9gVwk8GBtOvZQ คอลัมน์ A) โหลดเสร็จก่อนเสมอ
+      // เพื่อให้ชื่อทีมในตารางคะแนนเป็นชื่อผู้เล่นจริง ไม่ว่าจะเป็นลีกใหม่หรือลีกที่เคยเซฟไว้ก็ตาม
+      if (!accountNamesLoaded && accountNamesPromise) {
+        accountNamesPromise.then(finishInit);
+      } else {
+        finishInit();
+      }
+    }
+
+    // 📌 ฟังก์ชันสร้างลีกใหม่ (ชื่อทีมจริงจะถูกใส่ทีหลังผ่าน syncLeagueTeamNames)
+    function createNewLeague() {
+      // ตั้งทีมตัวเองเป็นอันดับแรก
+      leagueTeams = [
+        { id: 'user', name: currentPlayerName + ' FC', p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isUser: true, baseOvr: 0 }
+      ];
+      
+      // สร้างอีก 5 ทีมเพื่อให้ครบลีก 6 ทีม (ชื่อชั่วคราว จะถูกแทนที่ทันทีด้วยชื่อผู้เล่นจริง)
+      for (let i = 0; i < 5; i++) {
+        let randomOvr = 65 + Math.floor(Math.random() * 15); // สุ่มค่า OVR ของ AI ไว้ที่ 65-79
+        
+        leagueTeams.push({
+          id: 'ai' + (i+1), 
+          name: 'ทีมคู่แข่ง ' + (i+1), 
+          p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, 
+          isUser: false, 
+          baseOvr: randomOvr
+        });
+      }
+    }
+
+    // 📌 ฟังก์ชันซิงค์ชื่อทีมในลีก ให้ใช้ชื่อผู้เล่นจริงจากชีตบัญชี (16Kr3NrC0JfafYUaARtp6VINoX9fNdg9gVwk8GBtOvZQ คอลัมน์ A) เสมอ
+    // ทำงานได้ทั้งลีกที่เพิ่งสร้างใหม่ และลีกเก่าที่เคยเซฟไว้ (แก้ปัญหาชื่อทีมค้างเป็นชื่อ default)
+    function syncLeagueTeamNames() {
+      if (!leagueTeams || leagueTeams.length === 0) return;
+
+      // คัดกรองชื่อผู้เล่นคนอื่นๆ ออกจากชื่อตัวเอง (เรียงตามลำดับในชีตเพื่อให้คงที่ ไม่สลับไปมาเวลารีเฟรช)
+      const otherPlayers = allAccountNames.filter(name => name !== currentPlayerName);
+      // ชื่อสำรองเผื่อมีจำนวนผู้เล่นในระบบน้อยกว่า 5 คน
+      const defaultNames = ['หนองบัวแดง ยูไนเต็ด', 'ชัยภูมิ ซิตี้', 'เกษตรสมบูรณ์ เอฟซี', 'แก้งคร้อ วอร์ริเออร์', 'ภูเขียว วิลล่า'];
+
+      leagueTeams.forEach(t => {
+        if (t.isUser) {
+          t.name = currentPlayerName + ' FC';
+          t.rawName = null;
+          return;
+        }
+        const idx = parseInt(String(t.id).replace('ai', ''), 10) - 1;
+        if (otherPlayers[idx]) {
+          t.name = otherPlayers[idx] + ' FC';
+          t.rawName = otherPlayers[idx]; // 📌 ชื่อบัญชีจริง ใช้เช็คสถานะออนไลน์/ส่งคำท้าแข่งสด
+        } else {
+          t.name = defaultNames[idx];
+          t.rawName = null; // ไม่ใช่บัญชีจริง แข่งด้วยได้แค่การจำลองผลเท่านั้น
+        }
+      });
+    }
+
+    function setupFilters() {
+      const classSet = new Set(), roomSet = new Set();
+      allPlayers.forEach(p => { if(p.class) classSet.add(p.class); if(p.room) roomSet.add(p.room); });
+      
+      let classHtml = '<option value="">- ทุกชั้น -</option>';
+      Array.from(classSet).sort().forEach(c => classHtml += `<option value="${c}">${c}</option>`);
+      document.getElementById('classFilter').innerHTML = classHtml;
+
+      let roomHtml = '<option value="">- ทุกห้อง -</option>';
+      Array.from(roomSet).sort().forEach(r => roomHtml += `<option value="${r}">${r}</option>`);
+      document.getElementById('roomFilter').innerHTML = roomHtml;
+    }
+
+    function formatCurrency(num) {
+      if(num >= 1000000) return '฿' + (num / 1000000).toFixed(1) + 'M';
+      return '฿' + num.toLocaleString();
+    }
+
+    function updateBudgetDisplay() { document.getElementById('budgetText').innerText = formatCurrency(clubBudget); }
+    function getStatClass(val) { return val >= 80 ? 'stat-excellent' : (val >= 65 ? 'stat-good' : 'stat-poor'); }
+    function getPosColor(pos) {
+      if(pos === 'GK') return 'var(--pos-gk)';
+      if(['CB', 'LB', 'RB'].includes(pos)) return 'var(--pos-df)';
+      if(['CDM', 'CM', 'CAM', 'LW', 'RW'].includes(pos)) return 'var(--pos-mf)';
+      return 'var(--pos-fw)';
+    }
+
+    function filterPlayers() {
+      const text = document.getElementById('searchInput').value.toLowerCase();
+      const sClass = document.getElementById('classFilter').value;
+      const sRoom = document.getElementById('roomFilter').value;
+      const sPos = document.getElementById('posFilter').value;
+      
+      let marketHtml = ''; 
+      
+      allPlayers.forEach(p => {
+        if(squad.includes(p.studentId)) return; 
+        if(p.fullname.toLowerCase().includes(text) || p.studentId.includes(text)) {
+          if((sClass === "" || p.class === sClass) && (sRoom === "" || p.room === sRoom) && (sPos === "" || p.position === sPos)) {
+            marketHtml += createMarketCard(p);
+          }
+        }
+      });
+      
+      document.getElementById('marketPlayers').innerHTML = marketHtml; 
+      document.getElementById('squadCount').innerText = squad.length;
+    }
+
+    function formatOvr(v) { return (Math.round(v * 10) / 10).toFixed(1); }
+
+    function createMarketCard(p) {
+      const color = getPosColor(p.position);
+      return `
+        <div class="fm-card">
+          <div class="ovr-badge">${formatOvr(p.ovr)}</div>
+          <div class="player-info">
+            <div class="player-name">${p.fullname} <span class="pos-badge" style="background:${color}; color:${p.position==='GK'?'#000':'#fff'}">${p.position}</span> <span class="price-tag">${formatCurrency(p.price)}</span></div>
+            <div class="player-meta">ชั้น ${p.class}/${p.room} | รหัส: ${p.studentId}</div>
+            <div class="stats-grid">
+              <div class="stat-box"><span style="color:#94a3b8; font-size:9px;">เร็ว</span><span class="stat-val ${getStatClass(p.speed)}">${p.speed}</span></div>
+              <div class="stat-box"><span style="color:#94a3b8; font-size:9px;">ยิง</span><span class="stat-val ${getStatClass(p.shooting)}">${p.shooting}</span></div>
+              <div class="stat-box"><span style="color:#94a3b8; font-size:9px;">จ่าย</span><span class="stat-val ${getStatClass(p.passing)}">${p.passing}</span></div>
+            </div>
+          </div>
+          <div><button class="btn-sign" onclick="signPlayer('${p.studentId}')">เซ็นสัญญา</button></div>
+        </div>`;
+    }
+
+    function signPlayer(id) {
+      if(squad.length >= 20) return Swal.fire({ icon: 'warning', title: 'ทีมเต็มแล้ว!', text: 'โควต้าทีมสูงสุด 20 คน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+      const p = allPlayers.find(x => x.studentId === id);
+      if(clubBudget < p.price) return Swal.fire({ icon: 'warning', title: 'งบประมาณไม่พอ!', text: `คุณต้องใช้เงิน ${formatCurrency(p.price)} ในการเซ็นสัญญานักเตะคนนี้`, confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+      clubBudget -= p.price; updateBudgetDisplay();
+      squad.push(id);
+      const emptyIndex = pitchPositions.findIndex(val => val === null);
+      if(emptyIndex !== -1) pitchPositions[emptyIndex] = id;
+      markDirty();
+      filterPlayers(); renderTactics();
+    }
+
+    function releasePlayer(event, id) {
+      event.stopPropagation();
+      const p = allPlayers.find(x => x.studentId === id);
+      clubBudget += p.price; updateBudgetDisplay();
+      squad = squad.filter(sid => sid !== id);
+      pitchPositions = pitchPositions.map(val => val === id ? null : val);
+      if(selectedItem && selectedItem.id === id) selectedItem = null;
+      markDirty();
+      filterPlayers(); renderTactics();
+    }
+
+    function openQuiz(event, id) {
+      event.stopPropagation(); currentUpgradePlayerId = id;
+      const randomQuiz = quizBank[Math.floor(Math.random() * quizBank.length)];
+      currentCorrectAnswerIndex = randomQuiz.ans;
+      document.getElementById('quizSubject').innerText = randomQuiz.subject;
+      document.getElementById('quizQuestion').innerText = randomQuiz.q;
+      
+      let quizHtml = '';
+      randomQuiz.choices.forEach((choice, index) => { quizHtml += `<button onclick="checkAnswer(${index}, this)">${choice}</button>`; });
+      document.getElementById('quizOptions').innerHTML = quizHtml;
+      document.getElementById('quizModal').style.display = 'flex';
+    }
+
+    function closeQuiz() { document.getElementById('quizModal').style.display = 'none'; currentUpgradePlayerId = null; }
+
+    // 📌 การเพิ่มพลังต่อการตอบถูก 1 ครั้ง: เพิ่มแบบทศนิยมทีละนิด เพื่อให้รู้สึกท้าทายและเห็นความคืบหน้าละเอียดขึ้น
+    const OVR_GAIN_PER_CORRECT = 0.2;
+    const PRICE_GAIN_PER_CORRECT = 2000000;
+
+    function checkAnswer(selectedIndex, btnEl) {
+      const allBtns = document.querySelectorAll('#quizOptions button');
+      allBtns.forEach(b => b.disabled = true);
+
+      const isCorrect = selectedIndex === currentCorrectAnswerIndex;
+      if (isCorrect) {
+        btnEl.classList.add('opt-correct');
+      } else {
+        btnEl.classList.add('opt-wrong');
+        if (allBtns[currentCorrectAnswerIndex]) allBtns[currentCorrectAnswerIndex].classList.add('opt-correct');
+      }
+
+      setTimeout(() => {
+        if (isCorrect) {
+          const p = allPlayers.find(x => x.studentId === currentUpgradePlayerId);
+          if (p) {
+            const gain = p.ovr < 99 ? OVR_GAIN_PER_CORRECT : 0;
+            p.ovr = Math.min(99, Math.round((p.ovr + gain) * 10) / 10);
+            p.price += PRICE_GAIN_PER_CORRECT;
+            Swal.fire({
+              icon: 'success',
+              title: 'ตอบถูกต้อง! 🎉',
+              html: gain > 0
+                ? `<b>${p.fname}</b> ได้รับการฝึกฝน<br>พลังเพิ่มขึ้น <span style="color:#22c55e; font-weight:700;">+${gain.toFixed(1)}</span> (ปัจจุบัน <b>${formatOvr(p.ovr)}</b>)`
+                : `<b>${p.fname}</b> พลังเต็มขีดสุดแล้ว (99.0) 🔥`,
+              confirmButtonColor: '#3b82f6',
+              confirmButtonText: 'เยี่ยมมาก!',
+              background: '#1e293b',
+              color: '#f8fafc'
+            });
+          }
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'ตอบผิดครับ ❌',
+            text: 'ไม่เป็นไร ลองติวรอบใหม่ได้เลย',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: 'สู้ๆ',
+            background: '#1e293b',
+            color: '#f8fafc'
+          });
+        }
+        closeQuiz(); renderTactics();
+      }, 700);
+    }
+
+    function changeFormation() { renderTactics(); }
+
+    function calculateTeamOVR() {
+      const formation = document.getElementById('formationSelect').value;
+      const positions = formationsData[formation];
+      let total = 0, count = 0;
+      pitchPositions.forEach((id, index) => {
+        if(id) {
+          const p = allPlayers.find(x => x.studentId === id);
+          if(p){
+            const pos = positions[index];
+            const isWrongPos = pos && p.position !== pos.type;
+            total += isWrongPos ? Math.max(1, p.ovr - 15) : p.ovr;
+            count++;
+          }
+        }
+      });
+      return count === 11 ? Math.round(total / 11) : 0;
+    }
+
+    function renderTactics() {
+      const formation = document.getElementById('formationSelect').value;
+      const positions = formationsData[formation];
+
+      let pitchHtml = '';
+      positions.forEach((pos, index) => {
+        const playerId = pitchPositions[index];
+        const isSelected = selectedItem && selectedItem.type === 'pitch' && selectedItem.index === index;
+        
+        if(playerId) {
+          const p = allPlayers.find(x => x.studentId === playerId);
+          if (p) {
+            // 📌 ตรวจสอบตำแหน่ง: ถ้าตำแหน่งที่ยืน (pos.type) ไม่ตรงกับตำแหน่งถนัด (p.position) จะโดนหักพลัง
+            const isWrongPos = p.position !== pos.type;
+            const displayOvr = isWrongPos ? Math.max(1, p.ovr - 15) : p.ovr;
+            const borderColor = isWrongPos ? '2px solid #ef4444' : '2px solid #fff';
+            
+            pitchHtml += `
+              <div class="pitch-slot pitch-player ${isSelected ? 'selected-slot' : ''} ${isWrongPos ? 'wrong-pos' : ''}" 
+                   style="top: ${pos.top}; left: ${pos.left}; background: ${getPosColor(p.position)}; border: ${borderColor}" 
+                   onclick="handlePitchClick(${index})" title="${isWrongPos ? '⚠️ ลงผิดตำแหน่ง! ควรเล่น ' + pos.type + ' แต่ถนัด ' + p.position + ' (พลังลดลง)' : ''}">
+                ${formatOvr(displayOvr)}
+                <div class="pitch-player-name">${p.fname}</div>
+              </div>`;
+
+            // 📌 เมนูปุ่ม ขาย / อัพเกรด / สำรอง แสดงเหนือผู้เล่นที่กำลังเลือกอยู่
+            if (isSelected) {
+              pitchHtml += `
+                <div class="pitch-action-menu" style="top: calc(${pos.top} - 6px); left: ${pos.left};" onclick="event.stopPropagation()">
+                  <button class="pam-btn pam-sell" onclick="sellFromPitch(${index})">💰 ขาย</button>
+                  <button class="pam-btn pam-upgrade" onclick="openQuiz(event, '${playerId}')">⭐ อัพเกรด</button>
+                  <button class="pam-btn pam-bench" onclick="benchFromPitch(${index})">🔁 สำรอง</button>
+                  <button class="pam-btn pam-close" onclick="closePitchMenu()">✕</button>
+                </div>`;
+            }
+          }
+        } else {
+          pitchHtml += `<div class="pitch-slot slot-empty ${isSelected ? 'selected-slot' : ''}" style="top: ${pos.top}; left: ${pos.left};" onclick="handlePitchClick(${index})">+</div>`;
+        }
+      });
+      document.getElementById('pitchSlots').innerHTML = pitchHtml;
+
+      // ... (โค้ดส่วน benchArea คงเดิม)
+      let benchHtml = '';
+      let benchCount = 0;
+      squad.forEach(id => {
+        if(!pitchPositions.includes(id)) {
+          benchCount++;
+          const p = allPlayers.find(x => x.studentId === id);
+          if (p) {
+            const isSelected = selectedItem && selectedItem.type === 'bench' && selectedItem.id === id;
+            benchHtml += `<div class="bench-card ${isSelected ? 'selected-bench' : ''}" onclick="handleBenchClick('${id}')"><button class="btn-release" onclick="releasePlayer(event, '${id}')">ขาย</button><span class="pos-badge" style="background:${getPosColor(p.position)}; color:${p.position==='GK'?'#000':'#fff'}; align-self:flex-start;">${p.position}</span><div style="font-size:14px; font-weight:600; text-align:center;">${p.fname}</div><div class="ovr-badge" style="margin:0; padding:2px 8px; font-size:14px;">พลัง ${formatOvr(p.ovr)}</div><button class="btn-upgrade" onclick="openQuiz(event, '${id}')">⭐ ติวเข้ม!</button></div>`;
+          }
+        }
+      });
+      if(benchCount === 0) benchHtml = '<div style="color:#64748b; padding:20px; width:100%; text-align:center;">ยังไม่มีนักเตะสำรอง</div>';
+      document.getElementById('benchArea').innerHTML = benchHtml;
+      
+      const teamOvr = calculateTeamOVR();
+      document.getElementById('teamOvrDisplay').innerText = teamOvr > 0 ? teamOvr : 'จัดตัวไม่ครบ';
+      leagueTeams.find(t => t.isUser).baseOvr = teamOvr;
+    }
+
+    function handleBenchClick(id) {
+      if(selectedItem && selectedItem.type === 'bench' && selectedItem.id === id) selectedItem = null;
+      else if (selectedItem && selectedItem.type === 'pitch') { pitchPositions[selectedItem.index] = id; selectedItem = null; markDirty(); }
+      else selectedItem = { type: 'bench', id: id };
+      renderTactics();
+    }
+    function handlePitchClick(index) {
+      if (selectedItem) {
+        if (selectedItem.type === 'bench') { pitchPositions[index] = selectedItem.id; selectedItem = null; markDirty(); }
+        else if (selectedItem.type === 'pitch') {
+          const temp = pitchPositions[index]; pitchPositions[index] = pitchPositions[selectedItem.index]; pitchPositions[selectedItem.index] = temp; selectedItem = null;
+          markDirty();
+        }
+      } else selectedItem = { type: 'pitch', index: index };
+      renderTactics();
+    }
+
+    // 📌 ปิดเมนูปุ่ม ขาย / อัพเกรด / สำรอง ที่ลอยอยู่เหนือผู้เล่นที่เลือก
+    function closePitchMenu() {
+      selectedItem = null;
+      renderTactics();
+    }
+
+    // 📌 ขายนักเตะที่อยู่ในสนามโดยตรงจากเมนูป็อปอัป (คืนเงินตามราคาผู้เล่น)
+    function sellFromPitch(index) {
+      const id = pitchPositions[index];
+      if (!id) return;
+      const p = allPlayers.find(x => x.studentId === id);
+
+      const doSell = () => {
+        if (p) { clubBudget += p.price; updateBudgetDisplay(); }
+        squad = squad.filter(sid => sid !== id);
+        pitchPositions[index] = null;
+        selectedItem = null;
+        markDirty();
+        filterPlayers(); renderTactics();
+      };
+
+      if (!p) { doSell(); return; }
+
+      Swal.fire({
+        icon: 'question',
+        title: 'ยืนยันการขาย?',
+        text: `ขาย ${p.fname} เพื่อรับเงินคืน ${formatCurrency(p.price)}`,
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยันขาย',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#475569',
+        background: '#1e293b',
+        color: '#f8fafc'
+      }).then((result) => {
+        if (result.isConfirmed) doSell();
+      });
+    }
+
+    // 📌 ย้ายนักเตะจากสนามกลับไปม้านั่งสำรอง (ยังอยู่ในทีม แค่ไม่ได้ลงสนาม)
+    function benchFromPitch(index) {
+      pitchPositions[index] = null;
+      selectedItem = null;
+      markDirty();
+      renderTactics();
+    }
+
+    function renderLeagueTable() {
+      leagueTeams.sort((a, b) => {
+        if(b.pts !== a.pts) return b.pts - a.pts;
+        const gdA = a.gf - a.ga; const gdB = b.gf - b.ga;
+        if(gdB !== gdA) return gdB - gdA;
+        return b.gf - a.gf;
+      });
+      
+      let tableHtml = '';
+      leagueTeams.forEach((t, index) => {
+        const gd = t.gf - t.ga;
+        tableHtml += `<tr class="${t.isUser ? 'user-team' : ''}"><td>${index + 1}</td><td style="text-align:left;">${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${gd > 0 ? '+'+gd : gd}</td><td style="font-weight:bold; color:var(--gold);">${t.pts}</td></tr>`;
+      });
+      document.getElementById('leagueTableBody').innerHTML = tableHtml;
+    }
+
+    function matchSimulationCore(userPower, aiPower, isCupMatch, rngFn) {
+      const rng = rngFn || Math.random; // 📌 ถ้าส่ง rngFn (seeded) เข้ามา จะได้ผลลัพธ์ที่ทำนายซ้ำได้ — ใช้กับแมตช์ PvP สดที่ต้องให้ทั้งสองฝั่งเห็นผลตรงกัน
+      const powerDiff = userPower - aiPower;
+      let userGoals = 0, aiGoals = 0;
+      const baseChances = Math.floor(rng() * 3); 
+      
+      if(powerDiff > 12) { userGoals = baseChances + 2; aiGoals = Math.floor(rng() * 2); }
+      else if(powerDiff > 5) { userGoals = baseChances + 1; aiGoals = Math.floor(rng() * 3); }
+      else if(powerDiff > -5) { userGoals = baseChances; aiGoals = baseChances + Math.floor(rng() * 2) - Math.floor(rng() * 2); }
+      else if(powerDiff > -12) { userGoals = Math.floor(rng() * 3); aiGoals = baseChances + 1; }
+      else { userGoals = Math.floor(rng() * 2); aiGoals = baseChances + 2; }
+      
+      userGoals = Math.max(0, userGoals);
+      aiGoals = Math.max(0, Math.abs(aiGoals));
+
+      if (isCupMatch && userGoals === aiGoals) {
+         if (rng() > 0.5) userGoals += 1; else aiGoals += 1;
+      }
+      return { ug: userGoals, ag: aiGoals };
+    }
+
+    // 📌 PRNG แบบกำหนดเมล็ดได้ (mulberry32) — ใช้เมล็ดเดียวกันทั้งสองฝั่งของแมตช์สด จะได้ผลตรงกันเป๊ะ
+    function mulberry32JS(seed) {
+      return function () {
+        seed |= 0;
+        seed = (seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    // 📌 คำนวณผลแมตช์สด PvP จาก seed ร่วม + OVR ของทั้งสองฝั่ง (A=ผู้ท้า, B=ผู้ถูกท้า)
+    // ทั้งสองเครื่องเรียกฟังก์ชันนี้ด้วยพารามิเตอร์เดียวกัน จะได้ผลลัพธ์ (คะแนน+นาทีที่ยิง) เหมือนกันทุกประการ
+    function computeLiveMatchResult(seed, challengerOvr, opponentOvr) {
+      const rng = mulberry32JS(seed);
+      const formA = Math.floor(rng() * 11) - 5;
+      const formB = Math.floor(rng() * 11) - 5;
+      const powerA = challengerOvr + formA + 2;
+      const powerB = opponentOvr + formB;
+      const res = matchSimulationCore(powerA, powerB, false, rng);
+      const goalsA = res.ug, goalsB = res.ag;
+
+      const usedMinutes = new Set();
+      function pickMinute() {
+        let m;
+        do { m = Math.floor(rng() * 88) + 1; } while (usedMinutes.has(m));
+        usedMinutes.add(m);
+        return m;
+      }
+      const events = [];
+      for (let i = 0; i < goalsA; i++) events.push({ team: 'A', minute: pickMinute() });
+      for (let i = 0; i < goalsB; i++) events.push({ team: 'B', minute: pickMinute() });
+      events.sort((a, b) => a.minute - b.minute);
+
+      return { goalsA: goalsA, goalsB: goalsB, events: events, powerA: powerA, powerB: powerB };
+    }
+
+    // 📌 เงินรางวัลจากการแข่งขันลีกภูมิภาค
+    const LEAGUE_PRIZE_WIN = 50;
+    const LEAGUE_PRIZE_DRAW = 0;
+    const LEAGUE_PRIZE_LOSE = 25;
+
+    function playMatch() {
+      const userOvr = calculateTeamOVR();
+      if(userOvr === 0) return Swal.fire({ icon: 'warning', title: 'จัดทีมให้ครบก่อนนะ!', text: 'กรุณาจัดผู้เล่นลงสนามให้ครบ 11 คนก่อนทำการแข่งขัน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+      isLastMatchCup = false;
+
+      const aiTeamsList = leagueTeams.filter(t => !t.isUser);
+      const opponentIndex = Math.floor(Math.random() * aiTeamsList.length);
+      const opponent = aiTeamsList[opponentIndex];
+
+      // 📌 ถ้าคู่แข่งที่สุ่มได้เป็นเพื่อนจริง (มี rawName) ให้เช็คว่าออนไลน์อยู่ไหม
+      // ถ้าออนไลน์ -> ส่งคำท้าแข่งสด ถ้าไม่ออนไลน์/ไม่มีบัญชีจริง -> จำลองผลทันทีเหมือนเดิม
+      if (opponent.rawName) {
+        google.script.run
+          .withSuccessHandler(function(statusMap) {
+            if (statusMap && statusMap[opponent.rawName]) {
+              attemptLiveChallenge(opponent, userOvr);
+            } else {
+              runInstantSimMatch(opponent, userOvr);
+            }
+          })
+          .withFailureHandler(function() { runInstantSimMatch(opponent, userOvr); })
+          .getOnlineStatus([opponent.rawName]);
+      } else {
+        runInstantSimMatch(opponent, userOvr);
+      }
+    }
+
+    // 📌 จำลองผลแข่งทันที (เหมือนพฤติกรรมเดิม) — ใช้ตอนคู่แข่งไม่ออนไลน์/ไม่ตอบรับคำท้า
+    function runInstantSimMatch(opponent, userOvr) {
+      const userForm = Math.floor(Math.random() * 11) - 5;
+      const aiForm = Math.floor(Math.random() * 11) - 5;
+      const userPower = userOvr + userForm + 2;
+      const aiPower = opponent.baseOvr + aiForm;
+      const res = matchSimulationCore(userPower, aiPower, false);
+      finishLeagueMatch(opponent, res, userPower, aiPower, null);
+    }
+
+    // 📌 ปิดจ๊อบแมตช์ลีก: อัปเดตสถิติ/เงินรางวัล/ตารางคะแนน แล้วเล่นแอนิเมชัน (ใช้ทั้งกรณีจำลองและกรณีแมตช์สด PvP)
+    function finishLeagueMatch(opponent, res, userPower, aiPower, presetEvents) {
+      const userTeam = leagueTeams.find(t => t.isUser);
+      updateTeamStats(userTeam, res.ug, res.ag);
+      updateTeamStats(opponent, res.ag, res.ug);
+
+      const aiTeamsList = leagueTeams.filter(t => !t.isUser);
+      const otherAiTeams = aiTeamsList.filter(t => t.id !== opponent.id);
+      simulateAiMatch(otherAiTeams[0], otherAiTeams[1]);
+      simulateAiMatch(otherAiTeams[2], otherAiTeams[3]);
+
+      // 📌 คำนวณเงินรางวัล: ชนะ = 50, แพ้ = 25, เสมอ = 0
+      let leaguePrize = 0;
+      if (res.ug > res.ag) leaguePrize = LEAGUE_PRIZE_WIN;
+      else if (res.ug < res.ag) leaguePrize = LEAGUE_PRIZE_LOSE;
+      else leaguePrize = LEAGUE_PRIZE_DRAW;
+      if (leaguePrize > 0) { clubBudget += leaguePrize; updateBudgetDisplay(); }
+
+      renderLeagueTable();
+      markDirty();
+      runLiveMatchAnimation(currentPlayerName + " FC", opponent.name, res.ug, res.ag, function() {
+        showMatchStatsModal("จบการแข่งขันลีก", opponent.name, res.ug, res.ag, userPower, aiPower, leaguePrize);
+      }, presetEvents);
+    }
+
+    // ============ ระบบท้าแข่งสด (ฝั่งผู้ท้า) ============
+    function attemptLiveChallenge(opponent, userOvr) {
+      Swal.fire({
+        title: '📡 กำลังส่งคำท้าแข่งสด...',
+        html: `กำลังรอ <b>${opponent.name}</b> ตอบรับคำท้า (ไม่เกิน 20 วิ)`,
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        background: '#1e293b', color: '#f8fafc',
+        didOpen: () => { Swal.showLoading(); }
+      });
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.success) { Swal.close(); runInstantSimMatch(opponent, userOvr); return; }
+          pollChallengeAsChallenger(opponent, userOvr, res.matchId, 0);
+        })
+        .withFailureHandler(function() { Swal.close(); runInstantSimMatch(opponent, userOvr); })
+        .sendChallenge(currentPlayerName, opponent.rawName, userOvr);
+    }
+
+    function pollChallengeAsChallenger(opponent, userOvr, matchId, elapsedMs) {
+      if (elapsedMs > 20000) {
+        Swal.close();
+        Swal.fire({ icon: 'info', title: 'เพื่อนไม่ตอบรับคำท้า', text: 'ระบบจะจำลองผลการแข่งขันให้อัตโนมัติแทน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' })
+          .then(() => runInstantSimMatch(opponent, userOvr));
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(status) {
+          if (status.status === 'accepted') {
+            Swal.close();
+            const result = computeLiveMatchResult(status.seed, userOvr, status.opponentOvr);
+            const myEvents = result.events.map(e => ({ team: e.team === 'A' ? 'user' : 'ai', minute: e.minute }));
+            waitForSyncedStart(status.startAt, function() {
+              finishLeagueMatch(opponent, { ug: result.goalsA, ag: result.goalsB }, result.powerA, result.powerB, myEvents);
+            });
+          } else if (status.status === 'declined' || status.status === 'cancelled' || status.status === 'expired') {
+            Swal.close();
+            Swal.fire({ icon: 'info', title: 'เพื่อนปฏิเสธคำท้า', text: 'ระบบจะจำลองผลการแข่งขันให้อัตโนมัติแทน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' })
+              .then(() => runInstantSimMatch(opponent, userOvr));
+          } else {
+            setTimeout(() => pollChallengeAsChallenger(opponent, userOvr, matchId, elapsedMs + 2000), 2000);
+          }
+        })
+        .withFailureHandler(function() {
+          setTimeout(() => pollChallengeAsChallenger(opponent, userOvr, matchId, elapsedMs + 2000), 2000);
+        })
+        .getChallengeStatus(matchId);
+    }
+
+    function waitForSyncedStart(startAt, onReady) {
+      const delay = Math.max(0, startAt - Date.now());
+      setTimeout(onReady, delay);
+    }
+
+    // ============ ระบบท้าแข่งสด (ฝั่งผู้ถูกท้า) ============
+    let isRespondingToChallenge = false;
+
+    function checkForIncomingChallenge() {
+      if (!gameStarted || isRespondingToChallenge) return;
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.found) {
+            isRespondingToChallenge = true;
+            showIncomingChallengePopup(res);
+          }
+        })
+        .withFailureHandler(function() {})
+        .getIncomingChallenge(currentPlayerName);
+    }
+
+    function showIncomingChallengePopup(challenge) {
+      let secondsLeft = 15;
+      let countdownInterval = null;
+      Swal.fire({
+        title: '⚔️ ถูกท้าแข่ง!',
+        html: `<b>${challenge.challenger}</b> ท้าคุณแข่งลีกภูมิภาคแบบสด!<br>เหลือเวลาตอบรับ <span id="challengeCountdown">15</span> วินาที`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '✅ ตอบรับ',
+        cancelButtonText: '❌ ปฏิเสธ',
+        confirmButtonColor: '#22c55e',
+        cancelButtonColor: '#ef4444',
+        background: '#1e293b', color: '#f8fafc',
+        allowOutsideClick: false,
+        didOpen: () => {
+          countdownInterval = setInterval(() => {
+            secondsLeft--;
+            const el = document.getElementById('challengeCountdown');
+            if (el) el.innerText = secondsLeft;
+            if (secondsLeft <= 0) { clearInterval(countdownInterval); Swal.clickCancel(); }
+          }, 1000);
+        },
+        willClose: () => { if (countdownInterval) clearInterval(countdownInterval); }
+      }).then((result) => {
+        const myOvr = calculateTeamOVR();
+        const accept = !!result.isConfirmed && myOvr > 0;
+        if (result.isConfirmed && myOvr === 0) {
+          Swal.fire({ icon: 'warning', title: 'จัดทีมให้ครบก่อนนะ!', text: 'ทีมของคุณยังไม่ครบ 11 คน จึงตอบรับคำท้าไม่ได้ ระบบจะปฏิเสธคำท้านี้แทน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+        }
+        google.script.run
+          .withSuccessHandler(function(res) {
+            isRespondingToChallenge = false;
+            if (accept && res && res.success) {
+              const result = computeLiveMatchResult(res.seed, res.challengerOvr, myOvr);
+              const myEvents = result.events.map(e => ({ team: e.team === 'B' ? 'user' : 'ai', minute: e.minute }));
+              const opponentTeamObj = leagueTeams.find(t => !t.isUser && t.rawName === challenge.challenger) || {
+                id: 'live_' + challenge.matchId, name: challenge.challenger + ' FC',
+                p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, isUser: false, baseOvr: 0, rawName: challenge.challenger
+              };
+              waitForSyncedStart(res.startAt, function() {
+                finishLeagueMatch(opponentTeamObj, { ug: result.goalsB, ag: result.goalsA }, myOvr, res.challengerOvr, myEvents);
+              });
+            }
+          })
+          .withFailureHandler(function() { isRespondingToChallenge = false; })
+          .respondChallenge(challenge.matchId, currentPlayerName, accept, myOvr);
+      });
+    }
+
+    function updateTeamStats(team, gf, ga) {
+      team.p++; team.gf += gf; team.ga += ga;
+      if(gf > ga) { team.w++; team.pts += 3; }
+      else if(gf < ga) { team.l++; }
+      else { team.d++; team.pts += 1; }
+    }
+    function simulateAiMatch(t1, t2) {
+       let diff = t1.baseOvr - t2.baseOvr;
+       let g1 = Math.floor(Math.random() * 3); let g2 = Math.floor(Math.random() * 3);
+       if(diff > 5) g1 += 1; else if(diff < -5) g2 += 1;
+       updateTeamStats(t1, g1, g2); updateTeamStats(t2, g2, g1);
+    }
+
+    function updateCupStatus() {
+      const statusText = document.getElementById('cupStatusText');
+      const btnCup = document.getElementById('btnCup');
+      
+      if (currentCupRound >= 4) {
+        if (lastCupResult === 'win') {
+          statusText.innerText = "สถานะ: 🏆 แชมป์เปี้ยนส์!";
+          statusText.style.color = "#fbbf24";
+        } else {
+          statusText.innerText = "สถานะ: ตกรอบ (รอเริ่มฤดูกาลใหม่)";
+          statusText.style.color = "#ef4444";
+        }
+        btnCup.style.display = 'none'; 
+      } else {
+        statusText.innerText = "สถานะ: พบกับ " + cupOpponents[currentCupRound].name + " (" + cupRounds[currentCupRound] + ")";
+        statusText.style.color = "#fff";
+        btnCup.style.display = 'block';
+      }
+    }
+
+    function playCupMatch() {
+      const userOvr = calculateTeamOVR();
+      if(userOvr === 0) return Swal.fire({ icon: 'warning', title: 'จัดทีมให้ครบก่อนนะ!', text: 'กรุณาจัดผู้เล่นลงสนามให้ครบ 11 คนก่อนทำการแข่งขัน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
+      if(currentCupRound >= 4) return;
+      
+      isLastMatchCup = true;
+      const opponent = cupOpponents[currentCupRound];
+      const matchTitle = "ฟุตบอลถ้วย: " + cupRounds[currentCupRound];
+
+      const userForm = Math.floor(Math.random() * 11) - 5;
+      const aiForm = Math.floor(Math.random() * 11) - 5;
+      
+      const userPower = userOvr + userForm; 
+      const aiPower = opponent.baseOvr + aiForm;
+
+      const res = matchSimulationCore(userPower, aiPower, true);
+      
+      if (res.ug > res.ag) {
+        lastCupResult = 'win';
+        const prize = (currentCupRound + 1) * 10000000; 
+        clubBudget += prize; updateBudgetDisplay();
+      } else {
+        lastCupResult = 'lose';
+      }
+      markDirty();
+
+      runLiveMatchAnimation(currentPlayerName + " FC", opponent.name, res.ug, res.ag, function() {
+        showMatchStatsModal(matchTitle, opponent.name, res.ug, res.ag, userPower, aiPower);
+      });
+    }
+    
+    function runLiveMatchAnimation(userTeamName, oppTeamName, ug, ag, onDone, presetEvents) {
+      // 📌 ถ้ามี presetEvents (จากแมตช์สด PvP ที่คำนวณจาก seed ร่วม) ให้ใช้ตามนั้นเป๊ะ ไม่สุ่มใหม่
+      // เพื่อให้ทั้งสองฝั่งเห็นนาทีที่ยิงประตูตรงกันทุกลูก
+      let events;
+      if (presetEvents) {
+        events = presetEvents.slice().sort((a, b) => a.minute - b.minute);
+      } else {
+        // สุ่มนาทีที่แต่ละประตูจะเกิดขึ้น (ไม่ซ้ำกัน)
+        const usedMinutes = new Set();
+        function pickMinute() {
+          let m;
+          do { m = Math.floor(Math.random() * 88) + 1; } while (usedMinutes.has(m));
+          usedMinutes.add(m);
+          return m;
+        }
+        events = [];
+        for (let i = 0; i < ug; i++) events.push({ team: 'user', minute: pickMinute() });
+        for (let i = 0; i < ag; i++) events.push({ team: 'ai', minute: pickMinute() });
+        events.sort((a, b) => a.minute - b.minute);
+      }
+
+      // ตั้งค่าหน้าจอโหมด "กำลังแข่งขัน"
+      document.getElementById('matchModalTitle').innerText = "🔴 กำลังแข่งขันสด...";
+      document.getElementById('nameUser').innerText = userTeamName;
+      document.getElementById('nameAI').innerText = oppTeamName;
+      document.getElementById('scoreUser').innerText = "0";
+      document.getElementById('scoreAI').innerText = "0";
+
+      document.getElementById('matchLiveArea').style.display = 'block';
+      document.getElementById('matchStatsContainer').style.display = 'none';
+      document.getElementById('matchEvents').style.display = 'none';
+      document.getElementById('cupResultMsg').style.display = 'none';
+      document.getElementById('matchCloseBtn').style.display = 'none';
+      document.getElementById('liveMinute').innerText = '0';
+
+      const eventsLog = document.getElementById('liveEventsLog');
+      eventsLog.innerHTML = '';
+      const ball = document.getElementById('miniBall');
+      const flash = document.getElementById('goalFlash');
+      flash.classList.remove('show');
+      flash.innerText = '';
+      ball.style.left = '50%';
+      ball.style.top = '50%';
+
+      document.getElementById('matchModal').style.display = 'flex';
+
+      let liveUserScore = 0, liveAiScore = 0;
+      let minute = 0;
+      let eventIdx = 0;
+      let flashTimeout = null;
+
+      const timer = setInterval(() => {
+        minute++;
+        document.getElementById('liveMinute').innerText = minute;
+
+        // ขยับลูกบอลไปมาสุ่มตำแหน่งในสนาม จำลองการแข่งขัน
+        const leftPct = 8 + Math.random() * 84;
+        const topPct = 14 + Math.random() * 72;
+        ball.style.left = leftPct + '%';
+        ball.style.top = topPct + '%';
+
+        // ตรวจสอบว่านาทีนี้มีประตูเกิดขึ้นหรือไม่
+        while (eventIdx < events.length && events[eventIdx].minute === minute) {
+          const ev = events[eventIdx];
+          eventIdx++;
+          const scorerName = ev.team === 'user' ? userTeamName : oppTeamName;
+          if (ev.team === 'user') {
+            liveUserScore++;
+            document.getElementById('scoreUser').innerText = liveUserScore;
+          } else {
+            liveAiScore++;
+            document.getElementById('scoreAI').innerText = liveAiScore;
+          }
+
+          // บอลไปอยู่กลางประตูตอนยิงเข้า
+          ball.style.left = ev.team === 'user' ? '92%' : '8%';
+          ball.style.top = '50%';
+
+          flash.innerText = "⚽ ประตู! " + scorerName + " ทำประตู!";
+          flash.classList.add('show');
+          if (flashTimeout) clearTimeout(flashTimeout);
+          flashTimeout = setTimeout(() => flash.classList.remove('show'), 1300);
+
+          const line = document.createElement('div');
+          line.className = 'goal-line';
+          line.innerText = "⚽ นาทีที่ " + minute + "' - " + scorerName + " ยิงประตู!";
+          eventsLog.appendChild(line);
+          eventsLog.scrollTop = eventsLog.scrollHeight;
+        }
+
+        if (minute >= 90) {
+          clearInterval(timer);
+          setTimeout(() => {
+            document.getElementById('matchLiveArea').style.display = 'none';
+            document.getElementById('matchStatsContainer').style.display = 'block';
+            document.getElementById('matchEvents').style.display = 'block';
+            document.getElementById('matchCloseBtn').style.display = 'block';
+            onDone();
+          }, 700);
+        }
+      }, 55);
+    }
+
+    function showMatchStatsModal(title, oppName, ug, ag, up, ap, leaguePrize) {
+      document.getElementById('matchModalTitle').innerText = title;
+      document.getElementById('nameUser').innerText = currentPlayerName + " FC";
+      document.getElementById('nameAI').innerText = oppName;
+      document.getElementById('scoreUser').innerText = ug;
+      document.getElementById('scoreAI').innerText = ag;
+      
+      let uPoss = 50 + Math.floor((up - ap) / 2); uPoss = Math.max(30, Math.min(70, uPoss)); 
+      let aPoss = 100 - uPoss;
+      let uShots = ug + Math.floor(Math.random() * 6) + (up > ap ? 2 : 0);
+      let aShots = ag + Math.floor(Math.random() * 6) + (ap > up ? 2 : 0);
+
+      document.getElementById('matchStatsContainer').innerHTML = `
+        <div class="stat-row">
+          <span class="stat-num stat-label" style="text-align:right;">${uPoss}%</span>
+          <div class="stat-bar-bg"><div class="stat-bar-fill stat-bar-left" style="width:${uPoss}%"></div></div>
+          <span class="stat-label">การครองบอล</span>
+          <div class="stat-bar-bg"><div class="stat-bar-fill stat-bar-right" style="width:${aPoss}%"></div></div>
+          <span class="stat-num stat-label" style="text-align:left;">${aPoss}%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-num stat-label" style="text-align:right;">${uShots}</span>
+          <div class="stat-bar-bg"><div class="stat-bar-fill stat-bar-left" style="width:${Math.min(100, uShots*10)}%"></div></div>
+          <span class="stat-label">โอกาสทำประตู</span>
+          <div class="stat-bar-bg"><div class="stat-bar-fill stat-bar-right" style="width:${Math.min(100, aShots*10)}%"></div></div>
+          <span class="stat-num stat-label" style="text-align:left;">${aShots}</span>
+        </div>
+      `;
+      
+      let events = '';
+      if (isLastMatchCup && ug === ag) {
+          events = "หมดเวลาเสมอกัน ต้องตัดสินด้วยจุดโทษ... ";
+      }
+
+      if(ug > ag) events += `⚽ ทีมของคุณสามารถเอาชนะและผ่านเกมนี้ไปได้! <br>`;
+      else if (ag > ug) events += `⚽ ทางฝั่ง ${oppName} อาศัยความแน่นอนกว่า เอาชนะไปได้<br>`;
+      else events += `จับมือแบ่งแต้มกันไปอย่างสุดมันส์`;
+      
+      document.getElementById('matchEvents').innerHTML = events;
+
+      const cupMsg = document.getElementById('cupResultMsg');
+      if (isLastMatchCup) {
+        cupMsg.style.display = 'block';
+        if (lastCupResult === 'win') {
+          const prizeText = formatCurrency((currentCupRound + 1) * 10000000);
+          cupMsg.innerHTML = `🎉 ยินดีด้วย! ทีมของคุณผ่านเข้ารอบ และรับเงินรางวัล ${prizeText}`;
+          cupMsg.style.color = "#22c55e";
+        } else {
+          cupMsg.innerHTML = `❌ เสียใจด้วย ทีมของคุณตกรอบฟุตบอลถ้วยไปอย่างน่าเสียดาย`;
+          cupMsg.style.color = "#ef4444";
+        }
+      } else {
+        // 📌 แจ้งเงินรางวัลจากการแข่งขันลีก
+        cupMsg.style.display = 'block';
+        if (ug > ag) {
+          cupMsg.innerHTML = `🎉 ชนะการแข่งขัน! รับเงินรางวัล ${formatCurrency(leaguePrize)}`;
+          cupMsg.style.color = "#22c55e";
+        } else if (ug === ag) {
+          cupMsg.innerHTML = `🤝 เสมอกัน ไม่ได้รับเงินรางวัลในนัดนี้`;
+          cupMsg.style.color = "#eab308";
+        } else {
+          cupMsg.innerHTML = `😢 แพ้การแข่งขัน ได้รับเงินปลอบใจ ${formatCurrency(leaguePrize)}`;
+          cupMsg.style.color = "#ef4444";
+        }
+      }
+
+      document.getElementById('matchModal').style.display = 'flex';
+    }
+
+    function closeMatchModal() { 
+      document.getElementById('matchModal').style.display = 'none'; 
+      if (isLastMatchCup) {
+        if (lastCupResult === 'win') {
+          currentCupRound++;
+        } else {
+          currentCupRound = 4; 
+        }
+        markDirty();
+        updateCupStatus();
+      }
+    }
+  </script>
 </body>
 </html>
