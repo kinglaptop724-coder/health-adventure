@@ -248,7 +248,11 @@
       
       <div class="cup-status-bar">
         <div class="cup-title">🏆 ฟุตบอลถ้วยข้ามลีก (ต่างจังหวัด)</div>
-        <div style="font-weight: 600; font-size: 14px;" id="cupStatusText">สถานะ: รอบ 16 ทีมสุดท้าย</div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap: wrap;">
+          <div style="font-weight: 600; font-size: 14px;" id="cupStatusText">สถานะ: กำลังโหลด...</div>
+          <button onclick="showCupBracket()" style="font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid var(--cup-bg); background:transparent; color:#c4b5fd; cursor:pointer;">📋 ผังสาย</button>
+          <button onclick="openAdminCupPanel()" style="font-size:12px; padding:5px 10px; border-radius:6px; border:1px solid #475569; background:transparent; color:#94a3b8; cursor:pointer;">🔧 แอดมิน</button>
+        </div>
       </div>
       
       <div class="pitch-container" id="pitchArea">
@@ -459,8 +463,7 @@
       return {
         budget: clubBudget,
         squad: squad,
-        pitch: pitchPositions,
-        cupRound: currentCupRound
+        pitch: pitchPositions
       };
     }
 
@@ -544,6 +547,9 @@
     // 📌 ซิงค์ตารางคะแนนลีกภูมิภาคกลางทุกๆ 8 วิ เพื่อให้ทุกคนในกลุ่มเดียวกันเห็นตัวเลขตรงกันแบบเรียลไทม์
     setInterval(refreshLeagueTable, 8000);
 
+    // 🏆 ซิงค์สถานะฟุตบอลถ้วยข้ามลีกทุกๆ 10 วิ (รอบปัจจุบัน/คู่แข่ง/ตกรอบ/แชมป์ ล้วนมาจากเซิร์ฟเวอร์)
+    setInterval(refreshCupState, 10000);
+
     function refreshMarketState() {
       if (!gameStarted || !currentPlayerName) return;
       google.script.run
@@ -569,6 +575,18 @@
         .getLeagueTable(currentPlayerName);
     }
 
+    // 🏆 ดึงสถานะฟุตบอลถ้วยข้ามลีกล่าสุดของตัวเอง (waiting / ready / eliminated / champion / ยังไม่เริ่มถ้วย)
+    function refreshCupState() {
+      if (!gameStarted || !currentPlayerName) return;
+      google.script.run
+        .withSuccessHandler(function(res) {
+          cupState = res || { active: false };
+          updateCupStatus();
+        })
+        .withFailureHandler(function() {})
+        .getMyCupMatch(currentPlayerName);
+    }
+
     // เซฟทันทีแบบเงียบๆ ถ้าผู้เล่นสลับแท็บ/ปิดหน้าจอไปในขณะที่ยังมีข้อมูลค้างไม่ได้บันทึก
     document.addEventListener('visibilitychange', function() {
       if (document.visibilityState === 'hidden' && isDirty) silentAutoSave();
@@ -578,15 +596,8 @@
     let leagueGroupId = null;
     let leagueTable = []; // แคชล่าสุดจากเซิร์ฟเวอร์ [{playerName, ovr, played, won, draw, lost, gf, ga, pts}, ...]
 
-    const cupRounds = ["รอบ 16 ทีมสุดท้าย", "รอบ 8 ทีมสุดท้าย", "รอบรองชนะเลิศ", "รอบชิงชนะเลิศ"];
-    let currentCupRound = 0; 
-    
-    const cupOpponents = [
-      { name: "สกลนคร เอฟซี", baseOvr: 72 }, 
-      { name: "อุดรธานี ซิตี้", baseOvr: 78 }, 
-      { name: "ขอนแก่น ยูไนเต็ด", baseOvr: 84 }, 
-      { name: "บุรีรัมย์ อะคาเดมี่", baseOvr: 90 }  
-    ];
+    // 🏆 ฟุตบอลถ้วยข้ามลีก: สถานะทั้งหมดมาจากเซิร์ฟเวอร์ (ผังสายจริง จับคู่กับคนจริงข้ามกลุ่ม) ไม่มีทีม AI ปลอมอีกต่อไป
+    let cupState = { active: false }; // แคชผลลัพธ์ล่าสุดจาก getMyCupMatch()
 
     const quizBank = [
       // 🔢 คณิตศาสตร์
@@ -701,7 +712,6 @@
         clubBudget = loadedSaveData.budget || 200000000;
         squad = loadedSaveData.squad || [];
         pitchPositions = loadedSaveData.pitch || Array(11).fill(null);
-        if (loadedSaveData.cupRound !== undefined) currentCupRound = loadedSaveData.cupRound;
       }
 
       function finishInit() {
@@ -715,6 +725,8 @@
           .withSuccessHandler(function() { refreshLeagueTable(); })
           .withFailureHandler(function() { refreshLeagueTable(); })
           .joinLeague(currentPlayerName, calculateTeamOVR());
+
+        refreshCupState(); // 🏆 ดึงสถานะถ้วยทันทีหลังเข้าเกม ไม่ต้องรอรอบโพลแรก (10 วิ)
       }
 
       // ต้องรอให้ (1) รายชื่อบัญชี และ (2) สถานะตลาดปัจจุบัน โหลดเสร็จก่อนเสมอ
@@ -1115,13 +1127,14 @@
 
     // 📌 คำนวณผลแมตช์สด PvP จาก seed ร่วม + OVR ของทั้งสองฝั่ง (A=ผู้ท้า, B=ผู้ถูกท้า)
     // ทั้งสองเครื่องเรียกฟังก์ชันนี้ด้วยพารามิเตอร์เดียวกัน จะได้ผลลัพธ์ (คะแนน+นาทีที่ยิง) เหมือนกันทุกประการ
-    function computeLiveMatchResult(seed, challengerOvr, opponentOvr) {
+    // isCupMatch = true: ห้ามเสมอ (matchSimulationCore จะตัดสินผู้ชนะให้จาก rng เดียวกัน ทั้งสองฝั่งได้ผลตรงกัน)
+    function computeLiveMatchResult(seed, challengerOvr, opponentOvr, isCupMatch) {
       const rng = mulberry32JS(seed);
       const formA = Math.floor(rng() * 11) - 5;
       const formB = Math.floor(rng() * 11) - 5;
       const powerA = challengerOvr + formA + 2;
       const powerB = opponentOvr + formB;
-      const res = matchSimulationCore(powerA, powerB, false, rng);
+      const res = matchSimulationCore(powerA, powerB, !!isCupMatch, rng);
       const goalsA = res.ug, goalsB = res.ag;
 
       const usedMinutes = new Set();
@@ -1185,6 +1198,7 @@
     // 📌 ปิดจ๊อบแมตช์ลีก: จ่ายเงินรางวัล + เล่นแอนิเมชัน แล้วบันทึกผลลงตารางกลาง (ทำครั้งเดียวโดยฝั่ง "ผู้ริเริ่มแมตช์" เท่านั้น กันสถิตินับซ้ำสองเท่า)
     // shouldRecord = true เฉพาะฝั่งที่กดแข่งเอง (ทั้งกรณีจำลองผลกับคนออฟไลน์ และกรณีเป็นผู้ท้าที่ชนะการจับคู่แมตช์สด)
     function finishLeagueMatch(opponentName, res, userPower, aiPower, presetEvents, shouldRecord) {
+      isLastMatchCup = false;
       // 📌 คำนวณเงินรางวัล: ชนะ = 50, แพ้ = 25, เสมอ = 0
       let leaguePrize = 0;
       if (res.ug > res.ag) leaguePrize = LEAGUE_PRIZE_WIN;
@@ -1281,16 +1295,25 @@
     }
 
     function showIncomingChallengePopup(challenge) {
+      const isCup = challenge.matchType === 'cup';
+
+      // 📌 ป้องกันความปลอดภัย: คำท้าถ้วยต้องมาจากคู่แข่งที่จับสลากไว้ในผังสายเท่านั้น ถ้าไม่ตรง ปฏิเสธอัตโนมัติแบบเงียบๆ
+      if (isCup && (!cupState || !cupState.ready || cupState.opponent !== challenge.challenger)) {
+        google.script.run.withFailureHandler(function(){}).respondChallenge(challenge.matchId, currentPlayerName, false, 0);
+        isRespondingToChallenge = false;
+        return;
+      }
+
       let secondsLeft = 15;
       let countdownInterval = null;
       Swal.fire({
-        title: '⚔️ ถูกท้าแข่ง!',
-        html: `<b>${challenge.challenger}</b> ท้าคุณแข่งลีกภูมิภาคแบบสด!<br>เหลือเวลาตอบรับ <span id="challengeCountdown">15</span> วินาที`,
+        title: isCup ? '🏆 ถูกท้าแข่งบอลถ้วย!' : '⚔️ ถูกท้าแข่ง!',
+        html: `<b>${challenge.challenger}</b> ท้าคุณแข่ง${isCup ? 'บอลถ้วยข้ามลีก' : 'ลีกภูมิภาค'}แบบสด!<br>เหลือเวลาตอบรับ <span id="challengeCountdown">15</span> วินาที`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: '✅ ตอบรับ',
         cancelButtonText: '❌ ปฏิเสธ',
-        confirmButtonColor: '#22c55e',
+        confirmButtonColor: isCup ? '#8b5cf6' : '#22c55e',
         cancelButtonColor: '#ef4444',
         background: '#1e293b', color: '#f8fafc',
         allowOutsideClick: false,
@@ -1313,11 +1336,16 @@
           .withSuccessHandler(function(res) {
             isRespondingToChallenge = false;
             if (accept && res && res.success) {
-              const result = computeLiveMatchResult(res.seed, res.challengerOvr, myOvr);
+              const result = computeLiveMatchResult(res.seed, res.challengerOvr, myOvr, isCup);
               const myEvents = result.events.map(e => ({ team: e.team === 'B' ? 'user' : 'ai', minute: e.minute }));
               waitForSyncedStart(res.startAt, function() {
-                // 📌 shouldRecord = false: ฝั่งผู้ท้า (challenger) เป็นคนบันทึกผลลงตารางกลางแทน กันสถิตินับซ้ำสองเท่า
-                finishLeagueMatch(challenge.challenger, { ug: result.goalsB, ag: result.goalsA }, myOvr, res.challengerOvr, myEvents, false);
+                if (isCup) {
+                  // 📌 shouldRecord = false: ฝั่งผู้ท้า (challenger) เป็นคนบันทึกผลลงผังสายกลางแทน กันบันทึกซ้ำสองเท่า
+                  finishCupMatch(challenge.challenger, { ug: result.goalsB, ag: result.goalsA }, myOvr, res.challengerOvr, myEvents, false, cupState.round || 0);
+                } else {
+                  // 📌 shouldRecord = false: ฝั่งผู้ท้า (challenger) เป็นคนบันทึกผลลงตารางกลางแทน กันสถิตินับซ้ำสองเท่า
+                  finishLeagueMatch(challenge.challenger, { ug: result.goalsB, ag: result.goalsA }, myOvr, res.challengerOvr, myEvents, false);
+                }
               });
             }
           })
@@ -1326,54 +1354,230 @@
       });
     }
 
+    // แปลงเลขรอบ (0-based) + จำนวนรอบทั้งหมด ให้เป็นชื่อรอบที่อ่านง่าย
+    function cupRoundLabel(r, totalRounds) {
+      if (totalRounds == null) return "รอบที่ " + (r + 1);
+      const remain = totalRounds - r;
+      if (remain === 1) return "รอบชิงชนะเลิศ";
+      if (remain === 2) return "รอบรองชนะเลิศ";
+      const teams = Math.pow(2, remain);
+      return "รอบ " + teams + " ทีมสุดท้าย";
+    }
+
     function updateCupStatus() {
       const statusText = document.getElementById('cupStatusText');
       const btnCup = document.getElementById('btnCup');
-      
-      if (currentCupRound >= 4) {
-        if (lastCupResult === 'win') {
-          statusText.innerText = "สถานะ: 🏆 แชมป์เปี้ยนส์!";
-          statusText.style.color = "#fbbf24";
-        } else {
-          statusText.innerText = "สถานะ: ตกรอบ (รอเริ่มฤดูกาลใหม่)";
-          statusText.style.color = "#ef4444";
-        }
-        btnCup.style.display = 'none'; 
-      } else {
-        statusText.innerText = "สถานะ: พบกับ " + cupOpponents[currentCupRound].name + " (" + cupRounds[currentCupRound] + ")";
+
+      if (!cupState || !cupState.active) {
+        statusText.innerText = "สถานะ: ยังไม่มีการเริ่มถ้วย (รอแอดมิน/ครูกดเริ่ม)";
+        statusText.style.color = "#94a3b8";
+        btnCup.style.display = 'none';
+        return;
+      }
+      if (cupState.champion) {
+        statusText.innerText = "สถานะ: 🏆 แชมป์เปี้ยนส์ถ้วยข้ามลีก!";
+        statusText.style.color = "#fbbf24";
+        btnCup.style.display = 'none';
+        return;
+      }
+      if (cupState.notInBracket) {
+        statusText.innerText = "สถานะ: ไม่ผ่านเข้ารอบถ้วยฤดูกาลนี้ (ต้องติด Top 2 ของกลุ่ม)";
+        statusText.style.color = "#94a3b8";
+        btnCup.style.display = 'none';
+        return;
+      }
+      if (cupState.eliminated) {
+        const roundLabel = cupRoundLabel(cupState.round, cupState.totalRounds);
+        statusText.innerText = "สถานะ: ตกรอบ (" + roundLabel + ") แพ้ " + cupState.opponent + " " + cupState.myScore + "-" + cupState.oppScore;
+        statusText.style.color = "#ef4444";
+        btnCup.style.display = 'none';
+        return;
+      }
+      if (cupState.waiting) {
+        statusText.innerText = "สถานะ: รอคู่แข่งจากรอบก่อนหน้า... (" + cupRoundLabel(cupState.round, cupState.totalRounds) + ")";
+        statusText.style.color = "#eab308";
+        btnCup.style.display = 'none';
+        return;
+      }
+      if (cupState.ready) {
+        statusText.innerText = "สถานะ: พบกับ " + cupState.opponent + " (" + cupRoundLabel(cupState.round, cupState.totalRounds) + ")";
         statusText.style.color = "#fff";
         btnCup.style.display = 'block';
+        return;
       }
+      statusText.innerText = "สถานะ: กำลังโหลด...";
+      btnCup.style.display = 'none';
     }
 
     function playCupMatch() {
+      if (!cupState || !cupState.active || !cupState.ready || !cupState.opponent) {
+        refreshCupState();
+        return;
+      }
       const userOvr = calculateTeamOVR();
-      if(userOvr === 0) return Swal.fire({ icon: 'warning', title: 'จัดทีมให้ครบก่อนนะ!', text: 'กรุณาจัดผู้เล่นลงสนามให้ครบ 11 คนก่อนทำการแข่งขัน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
-      if(currentCupRound >= 4) return;
-      
-      isLastMatchCup = true;
-      const opponent = cupOpponents[currentCupRound];
-      const matchTitle = "ฟุตบอลถ้วย: " + cupRounds[currentCupRound];
+      if (userOvr === 0) return Swal.fire({ icon: 'warning', title: 'จัดทีมให้ครบก่อนนะ!', text: 'กรุณาจัดผู้เล่นลงสนามให้ครบ 11 คนก่อนทำการแข่งขัน', confirmButtonColor: '#3b82f6', background: '#1e293b', color: '#f8fafc' });
 
+      const opponentName = cupState.opponent;
+      const opponentOvr = cupState.opponentOvr || userOvr;
+      const roundIdx = cupState.round || 0;
+
+      // 📌 เช็คว่าคู่แข่งในผังสายออนไลน์อยู่ไหม ถ้าออนไลน์ -> ส่งคำท้าแข่งสด ถ้าไม่ -> จำลองผลทันทีจากค่าพลังทีม ณ ตอนเริ่มถ้วย
+      google.script.run
+        .withSuccessHandler(function(statusMap) {
+          if (statusMap && statusMap[opponentName]) {
+            attemptLiveCupChallenge(opponentName, opponentOvr, userOvr, roundIdx);
+          } else {
+            runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx);
+          }
+        })
+        .withFailureHandler(function() { runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx); })
+        .getOnlineStatus([opponentName]);
+    }
+
+    // 📌 จำลองผลถ้วยทันที — ใช้ตอนคู่แข่งไม่ออนไลน์ (ถ้วยห้ามเสมอ: matchSimulationCore(..., true, ...) ตัดสินผู้ชนะให้อัตโนมัติถ้าประตูเท่ากัน)
+    function runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx) {
       const userForm = Math.floor(Math.random() * 11) - 5;
       const aiForm = Math.floor(Math.random() * 11) - 5;
-      
-      const userPower = userOvr + userForm; 
-      const aiPower = opponent.baseOvr + aiForm;
-
+      const userPower = userOvr + userForm + 2;
+      const aiPower = opponentOvr + aiForm;
       const res = matchSimulationCore(userPower, aiPower, true);
-      
-      if (res.ug > res.ag) {
-        lastCupResult = 'win';
-        const prize = (currentCupRound + 1) * 10000000; 
-        clubBudget += prize; updateBudgetDisplay();
-      } else {
-        lastCupResult = 'lose';
-      }
+      finishCupMatch(opponentName, res, userPower, aiPower, null, true, roundIdx);
+    }
+
+    // 📌 ปิดจ๊อบแมตช์ถ้วย: จ่ายเงินรางวัล + เล่นแอนิเมชัน แล้วบันทึกผลลงผังสายกลาง (ทำครั้งเดียวโดยฝั่ง "ผู้ริเริ่มแมตช์" เท่านั้น)
+    function finishCupMatch(opponentName, res, userPower, aiPower, presetEvents, shouldRecord, roundIdx) {
+      const wonMatch = res.ug > res.ag;
+      lastCupResult = wonMatch ? 'win' : 'lose';
+      let prize = 0;
+      if (wonMatch) { prize = (roundIdx + 1) * 10000000; clubBudget += prize; updateBudgetDisplay(); }
       markDirty();
 
-      runLiveMatchAnimation(currentPlayerName + " FC", opponent.name, res.ug, res.ag, function() {
-        showMatchStatsModal(matchTitle, opponent.name, res.ug, res.ag, userPower, aiPower);
+      if (shouldRecord) {
+        google.script.run
+          .withSuccessHandler(function() { refreshCupState(); })
+          .withFailureHandler(function() { setTimeout(refreshCupState, 3000); })
+          .recordCupMatch(currentPlayerName, opponentName, res.ug, res.ag);
+      } else {
+        // ฝั่งถูกท้า: ผู้ท้าจะเป็นคนบันทึกผลลงผังสายกลางแทน แค่รอซิงค์รอบถัดไปให้สถานะอัปเดต
+        setTimeout(refreshCupState, 3000);
+      }
+
+      isLastMatchCup = true;
+      const matchTitle = "ฟุตบอลถ้วยข้ามลีก: " + cupRoundLabel(roundIdx, (cupState && cupState.totalRounds) || null);
+      runLiveMatchAnimation(currentPlayerName + " FC", opponentName + " FC", res.ug, res.ag, function() {
+        showMatchStatsModal(matchTitle, opponentName + " FC", res.ug, res.ag, userPower, aiPower, prize);
+      }, presetEvents);
+    }
+
+    // ============ ระบบท้าแข่งสด (ถ้วยข้ามลีก - ฝั่งผู้ท้า) ============
+    function attemptLiveCupChallenge(opponentName, opponentOvr, userOvr, roundIdx) {
+      Swal.fire({
+        title: '📡 กำลังส่งคำท้าแข่งบอลถ้วย...',
+        html: `กำลังรอ <b>${opponentName}</b> ตอบรับคำท้า (ไม่เกิน 20 วิ)`,
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        background: '#1e293b', color: '#f8fafc',
+        didOpen: () => { Swal.showLoading(); }
+      });
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.success) { Swal.close(); runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx); return; }
+          pollChallengeAsCupChallenger(opponentName, opponentOvr, userOvr, res.matchId, 0, roundIdx);
+        })
+        .withFailureHandler(function() { Swal.close(); runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx); })
+        .sendChallenge(currentPlayerName, opponentName, userOvr, 'cup');
+    }
+
+    function pollChallengeAsCupChallenger(opponentName, opponentOvr, userOvr, matchId, elapsedMs, roundIdx) {
+      if (elapsedMs > 20000) {
+        Swal.close();
+        Swal.fire({ icon: 'info', title: 'คู่แข่งไม่ตอบรับคำท้า', text: 'ระบบจะจำลองผลการแข่งขันให้อัตโนมัติแทน', confirmButtonColor: '#8b5cf6', background: '#1e293b', color: '#f8fafc' })
+          .then(() => runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx));
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(status) {
+          if (status.status === 'accepted') {
+            Swal.close();
+            const result = computeLiveMatchResult(status.seed, userOvr, status.opponentOvr, true);
+            const myEvents = result.events.map(e => ({ team: e.team === 'A' ? 'user' : 'ai', minute: e.minute }));
+            waitForSyncedStart(status.startAt, function() {
+              finishCupMatch(opponentName, { ug: result.goalsA, ag: result.goalsB }, result.powerA, result.powerB, myEvents, true, roundIdx);
+            });
+          } else if (status.status === 'declined' || status.status === 'cancelled' || status.status === 'expired') {
+            Swal.close();
+            Swal.fire({ icon: 'info', title: 'คู่แข่งปฏิเสธคำท้า', text: 'ระบบจะจำลองผลการแข่งขันให้อัตโนมัติแทน', confirmButtonColor: '#8b5cf6', background: '#1e293b', color: '#f8fafc' })
+              .then(() => runInstantSimCupMatch(opponentName, opponentOvr, userOvr, roundIdx));
+          } else {
+            setTimeout(() => pollChallengeAsCupChallenger(opponentName, opponentOvr, userOvr, matchId, elapsedMs + 2000, roundIdx), 2000);
+          }
+        })
+        .withFailureHandler(function() {
+          setTimeout(() => pollChallengeAsCupChallenger(opponentName, opponentOvr, userOvr, matchId, elapsedMs + 2000, roundIdx), 2000);
+        })
+        .getChallengeStatus(matchId);
+    }
+
+    // 🏆 แสดงผังสายถ้วยข้ามลีกทั้งหมด (ทุกคนเห็นตรงกัน)
+    function showCupBracket() {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.active || !res.bracket) {
+            return Swal.fire({ icon: 'info', title: 'ยังไม่มีการเริ่มถ้วย', text: 'รอแอดมิน/ครูกดเริ่มถ้วยก่อนนะครับ', confirmButtonColor: '#8b5cf6', background: '#1e293b', color: '#f8fafc' });
+          }
+          const bracket = res.bracket;
+          const totalRounds = bracket.rounds.length;
+          let html = '<div style="text-align:left; max-height: 60vh; overflow-y:auto;">';
+          bracket.rounds.forEach(function(round, r) {
+            html += '<div style="margin-bottom:14px;"><div style="font-weight:bold; color:#c4b5fd; margin-bottom:6px;">' + cupRoundLabel(r, totalRounds) + '</div>';
+            round.forEach(function(m) {
+              const p1 = m.player1 || 'รอผู้ผ่านเข้ารอบ';
+              const p2 = m.player2 || 'รอผู้ผ่านเข้ารอบ';
+              let scoreTxt = '';
+              if (m.status === 'done') scoreTxt = ' &nbsp; <b>' + m.score1 + ' - ' + m.score2 + '</b>';
+              else if (m.status === 'bye') scoreTxt = ' &nbsp; <span style="color:#94a3b8;">(ผ่านฟรี)</span>';
+              const p1Style = (m.winner && m.winner === m.player1) ? 'color:#22c55e; font-weight:bold;' : (m.status === 'done' ? 'color:#94a3b8;' : '');
+              const p2Style = (m.winner && m.winner === m.player2) ? 'color:#22c55e; font-weight:bold;' : (m.status === 'done' ? 'color:#94a3b8;' : '');
+              html += '<div style="padding:6px 10px; background:rgba(255,255,255,0.05); border-radius:6px; margin-bottom:4px; font-size:14px;">' +
+                '<span style="' + p1Style + '">' + p1 + '</span> vs <span style="' + p2Style + '">' + p2 + '</span>' + scoreTxt + '</div>';
+            });
+            html += '</div>';
+          });
+          html += '</div>';
+          Swal.fire({ title: '🏆 ผังสายถ้วยข้ามลีก', html: html, confirmButtonColor: '#8b5cf6', background: '#1e293b', color: '#f8fafc', width: 600 });
+        })
+        .withFailureHandler(function() {})
+        .getCupState();
+    }
+
+    // 🔧 แอดมิน/ครู: กดเริ่มถ้วย (ดึง Top 2 ของทุกกลุ่มลีกกลาง มาจับสายน็อคเอาท์)
+    function openAdminCupPanel() {
+      Swal.fire({
+        title: '🔧 เริ่มฟุตบอลถ้วยข้ามลีก',
+        input: 'password',
+        inputPlaceholder: 'รหัสแอดมิน/ครู',
+        showCancelButton: true,
+        confirmButtonText: 'เริ่มถ้วย',
+        cancelButtonText: 'ยกเลิก',
+        confirmButtonColor: '#8b5cf6',
+        cancelButtonColor: '#475569',
+        background: '#1e293b', color: '#f8fafc'
+      }).then(function(result) {
+        if (!result.isConfirmed || !result.value) return;
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res && res.success) {
+              Swal.fire({ icon: 'success', title: 'เริ่มถ้วยสำเร็จ!', text: 'จับสายให้ Top 2 ของทุกกลุ่มเรียบร้อยแล้ว', confirmButtonColor: '#8b5cf6', background: '#1e293b', color: '#f8fafc' });
+              refreshCupState();
+            } else {
+              Swal.fire({ icon: 'error', title: 'เริ่มถ้วยไม่สำเร็จ', text: (res && res.message) || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ', confirmButtonColor: '#ef4444', background: '#1e293b', color: '#f8fafc' });
+            }
+          })
+          .withFailureHandler(function() {
+            Swal.fire({ icon: 'error', title: 'เริ่มถ้วยไม่สำเร็จ', text: 'ติดต่อเซิร์ฟเวอร์ไม่ได้', confirmButtonColor: '#ef4444', background: '#1e293b', color: '#f8fafc' });
+          })
+          .adminStartCup(result.value);
       });
     }
     
@@ -1524,7 +1728,7 @@
       if (isLastMatchCup) {
         cupMsg.style.display = 'block';
         if (lastCupResult === 'win') {
-          const prizeText = formatCurrency((currentCupRound + 1) * 10000000);
+          const prizeText = formatCurrency(leaguePrize || 0);
           cupMsg.innerHTML = `🎉 ยินดีด้วย! ทีมของคุณผ่านเข้ารอบ และรับเงินรางวัล ${prizeText}`;
           cupMsg.style.color = "#22c55e";
         } else {
@@ -1551,15 +1755,6 @@
 
     function closeMatchModal() { 
       document.getElementById('matchModal').style.display = 'none'; 
-      if (isLastMatchCup) {
-        if (lastCupResult === 'win') {
-          currentCupRound++;
-        } else {
-          currentCupRound = 4; 
-        }
-        markDirty();
-        updateCupStatus();
-      }
     }
   </script>
 </body>
