@@ -332,7 +332,7 @@
     // ถ้าไม่มี (เช่น host แยกบน GitHub Pages) จะสร้างของจำลองขึ้นมาเอง โดยยิง fetch() ไปหา Apps Script Web App แทน
     // สิ่งที่ต้องแก้: เปลี่ยน GAS_API_URL ด้านล่างให้เป็น URL ของ Web App ที่ Deploy ไว้ (.../exec)
     if (typeof google === 'undefined' || !google.script || !google.script.run) {
-      var GAS_API_URL = 'https://script.google.com/macros/s/PUT_YOUR_DEPLOYMENT_ID_HERE/exec'; // 👉 แก้เป็น URL Web App จริงของคุณ
+      var GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzvII8Bg7S0kw3EIP-Waw1Na2dIwKZngN2i6u57RQmhLG1ttcXih1yOvhup69vP3FsPNw/exec';
 
       var __makeGasRunner = function(successHandler, failureHandler) {
         return new Proxy({}, {
